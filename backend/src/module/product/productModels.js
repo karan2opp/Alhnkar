@@ -1,0 +1,35 @@
+import mongoose from "mongoose";
+const variantSchema = new mongoose.Schema({
+  size:  { type: String, enum: ["XS", "S", "M", "L", "XL", "2XL", "3XL"], required: true },
+  stock: { type: Number, default: 0, min: 0 },
+  
+},{ _id: false })
+const productSchema= new mongoose.Schema({
+    title:{
+        type:String,
+        required:true,
+        lowercase:true,
+        minLength:3,
+        maxlength:30,
+        trim:true
+
+    },
+    description:{
+        type:String,
+        required:true,
+        lowercase:true,
+        minLength:10,
+        maxlength:250
+    },
+    gender:{
+      type:String,
+      enum:["men", "women", "kids", "unisex"]
+    },
+     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true }, 
+    price:{ type: Number, required: true },
+    images: [{ type: String }],    
+variants: [variantSchema],             
+  isActive: { type: Boolean, default: true }
+})
+
+export default mongoose.model("Product",productSchema)

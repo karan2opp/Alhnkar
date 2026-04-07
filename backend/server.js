@@ -1,6 +1,7 @@
 import http from "http"
 import { configDotenv } from "dotenv"
 import app from "./app.js"
+import { init } from "./src/module/socket/socket.js"
 
 import connectDB from "./src/common/config/db.js"
 configDotenv()
@@ -9,6 +10,7 @@ const PORT=process.env.PORT || 8000
 
 const start=async()=>{
   await  connectDB()
+  init(server)
     server.listen(PORT,()=>{
     console.log(`listening on ${PORT}`);
     
