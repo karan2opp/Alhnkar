@@ -4,33 +4,37 @@ import Product from "./productModels.js";
 import { getIO } from "../socket/socket.js";
 import ApiError from "../../common/utils/apiError.js";
 
+ import { SIZES } from "../../common/config/sizes.js"
+import Category from "../category/categoryModel.js"
 
  const createProduct = async (productInfo, imageFiles) => {
   const { title, description, price, variants, gender, category, isActive } = productInfo
+
+  const categoryDoc = await Category.findById(category)
+  if (!categoryDoc) throw ApiError.notFound("Category not found")
+
+  // ✅ validate sizes against category sizeType
+  const allowedSizes = SIZES[categoryDoc.sizeType]
+  variants.forEach(variant => {
+    if (!allowedSizes.includes(variant.size)) {
+      throw ApiError.badRequest(
+        `Invalid size "${variant.size}" for this category. Allowed: ${allowedSizes.join(", ")}`
+      )
+    }
+  })
 
   const imageUrls = imageFiles?.length
     ? await Promise.all(imageFiles.map(file => uploadToCloudinary(file.buffer, "products")))
     : []
 
   const product = await Product.create({
-    title,
-    description,
-    price,
-    gender,
-    category,   
-    isActive,
-    variants,   
-    images: imageUrls
+    title, description, price, gender,
+    category, isActive, variants, images: imageUrls
   })
 
-  getIO().to("user_room").emit("new_product", {
-    message: "New product just dropped!",
-    product
-  })
-
+  getIO().to("user_room").emit("new_product", { message: "New product just dropped!", product })
   return product
 }
-
  const updateProduct = async (productId, productInfo, imageFiles) => {
   
   const { title, description, price, variants, isActive, gender, category } = productInfo

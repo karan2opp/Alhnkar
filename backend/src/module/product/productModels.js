@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 const variantSchema = new mongoose.Schema({
-  size:  { type: String, enum: ["XS", "S", "M", "L", "XL", "2XL", "3XL"], required: true },
-  stock: { type: Number, default: 0, min: 0 },
-  
-},{ _id: false })
+  size:  { type: String, required: true }, // ✅ plain string, no enum
+  stock: { type: Number, default: 0, min: 0 }
+}, { _id: false })
 const productSchema= new mongoose.Schema({
     title:{
         type:String,

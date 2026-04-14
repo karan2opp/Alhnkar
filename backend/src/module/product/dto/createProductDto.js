@@ -2,7 +2,7 @@ import Joi from "joi";
 import baseDto from "../../../common/dto/baseDto.js";
 
 const variantSchema = Joi.object({
-  size:  Joi.string().valid("XS", "S", "M", "L", "XL", "2XL", "3XL").required(),
+  size:  Joi.string().required(), // ✅ plain string, no .valid()
   stock: Joi.number().min(0).default(0)
 })
 class createProductDto extends baseDto{
