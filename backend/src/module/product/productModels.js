@@ -26,9 +26,11 @@ const productSchema= new mongoose.Schema({
     },
      category: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true }, 
     price:{ type: Number, required: true },
-    images: [{ type: String }],    
+    images: [{ url: { type: String }, publicId: { type: String } }],
 variants: [variantSchema],             
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  averageRating: { type: Number, default: 0 },
+totalReviews:  { type: Number, default: 0 }
 })
 
 export default mongoose.model("Product",productSchema)

@@ -6,6 +6,7 @@ import categoryRoute from "./src/module/category/categoryRoutes.js"
 import addressRoute from "./src/module/address/addressRoutes.js"
 import orderRoute from "./src/module/orders/orderRoutes.js"
 import cartRoute from "./src/module/cart/cartRoutes.js"
+import reviewRoute from "./src/module/review/reviewRoutes.js"
 const app=express()
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -17,6 +18,7 @@ app.use("/api/categories",categoryRoute)
 app.use("/api/address",addressRoute)
 app.use("/api/orders",orderRoute)
 app.use("/api/cart",cartRoute)
+app.use("/api/review",reviewRoute)
 app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });

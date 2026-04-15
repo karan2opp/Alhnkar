@@ -1,77 +1,112 @@
-import { uploadToCloudinary } from "../../common/config/cloudinary.js";
+import { uploadToCloudinary,deleteFromCloudinary } from "../../common/config/cloudinary.js";
 
 import Product from "./productModels.js";
 import { getIO } from "../socket/socket.js";
 import ApiError from "../../common/utils/apiError.js";
-
+import Review from "../review/reviewModels.js"
+import mongoose from "mongoose";
  import { SIZES } from "../../common/config/sizes.js"
 import Category from "../category/categoryModel.js"
 
- const createProduct = async (productInfo, imageFiles) => {
-  const { title, description, price, variants, gender, category, isActive } = productInfo
 
-  const categoryDoc = await Category.findById(category)
-  if (!categoryDoc) throw ApiError.notFound("Category not found")
+const createProduct = async (productInfo, imageFiles) => {
+  const { title, description, price, variants, gender, category, isActive } = productInfo;
 
-  // ✅ validate sizes against category sizeType
-  const allowedSizes = SIZES[categoryDoc.sizeType]
+  const categoryDoc = await Category.findById(category);
+  if (!categoryDoc) throw ApiError.notFound("Category not found");
+
+  const allowedSizes = SIZES[categoryDoc.sizeType];
   variants.forEach(variant => {
     if (!allowedSizes.includes(variant.size)) {
-      throw ApiError.badRequest(
-        `Invalid size "${variant.size}" for this category. Allowed: ${allowedSizes.join(", ")}`
-      )
+      throw ApiError.badRequest(`Invalid size "${variant.size}"`);
     }
-  })
+  });
 
-  const imageUrls = imageFiles?.length
-    ? await Promise.all(imageFiles.map(file => uploadToCloudinary(file.buffer, "products")))
-    : []
+  let imageUrls = [];
 
-  const product = await Product.create({
-    title, description, price, gender,
-    category, isActive, variants, images: imageUrls
-  })
+  try {
+    imageUrls = imageFiles?.length
+      ? await Promise.all(
+          imageFiles.map(file => uploadToCloudinary(file.buffer, "products"))
+        )
+      : [];
 
-  getIO().to("user_room").emit("new_product", { message: "New product just dropped!", product })
-  return product
-}
- const updateProduct = async (productId, productInfo, imageFiles) => {
-  
-  const { title, description, price, variants, isActive, gender, category } = productInfo
+    if (imageUrls.length > 5) {
+      throw ApiError.badRequest("Maximum 5 images allowed");
+    }
 
-  const isFound = await Product.findById(productId)
-  if (!isFound) throw ApiError.notFound("Product not found")
+    const product = await Product.create({
+      title, description, price, gender,
+      category, isActive, variants, images: imageUrls
+    });
 
-  const obj = {}
+    return product;
 
-  if (title)               obj.title       = title
-  if (description)         obj.description = description
-  if (price)               obj.price       = price
-  if (gender)              obj.gender      = gender
-  if (category)            obj.category    = category  
-  if (isActive !== undefined) obj.isActive = isActive
-  if (variants)            obj.variants    = variants 
+  } catch (err) {
+    if (imageUrls.length) {
+      await Promise.allSettled(
+        imageUrls.map(img => deleteFromCloudinary(img.publicId))
+      );
+    }
+    throw ApiError.internal("Failed to create product");
+  }
+};
+const updateProduct = async (productId, productInfo, imageFiles) => {
+  const { title, description, price, variants, isActive, gender, category, deleteImages = [] } = productInfo;
 
-  if (imageFiles?.length) {
-    const newImageUrls = await Promise.all(
-      imageFiles.map(file => uploadToCloudinary(file.buffer, "products"))
-    )
-    obj.images = [...isFound.images, ...newImageUrls]
+  const product = await Product.findById(productId);
+  if (!product) throw ApiError.notFound("Product not found");
+
+  // 🔹 Update basic fields
+  if (title) product.title = title;
+  if (description) product.description = description;
+  if (price) product.price = price;
+  if (gender) product.gender = gender;
+  if (category) product.category = category;
+  if (isActive !== undefined) product.isActive = isActive;
+  if (variants) product.variants = variants;
+
+  // 🔹 Step 1: Delete selected images
+  if (deleteImages.length) {
+    await Promise.allSettled(
+      deleteImages.map(id => deleteFromCloudinary(id))
+    );
+
+    product.images = product.images.filter(
+      img => !deleteImages.includes(img.publicId)
+    );
   }
 
-  const product = await Product.findByIdAndUpdate(
-    productId,
-    { $set: obj },
-    { new: true, runValidators: true }
-  ).populate("category", "name") 
+  // 🔹 Step 2: Upload new images
+  let newImages = [];
+  if (imageFiles?.length) {
+    newImages = await Promise.all(
+      imageFiles.map(file => uploadToCloudinary(file.buffer, "products"))
+    );
+  }
+
+  // 🔹 Step 3: Check limit (max 5)
+  const totalImages = [...product.images, ...newImages];
+  if (totalImages.length > 5) {
+    // rollback new uploads
+    await Promise.allSettled(
+      newImages.map(img => deleteFromCloudinary(img.publicId))
+    );
+
+    throw ApiError.badRequest("Maximum 5 images allowed");
+  }
+
+  product.images = totalImages;
+
+  await product.save();
 
   getIO().to("user_room").emit("product_updated", {
     message: "Product updated",
     product
-  })
+  });
 
-  return product
-}
+  return product;
+};
 
 const deleteProduct = async (productId) => {
   const product = await Product.findByIdAndUpdate(
@@ -129,5 +164,22 @@ const getAllProduct = async (query) => {
 
   return product
 }
+const updateProductRating = async (productId) => {
+  const result = await Review.aggregate([
+    { $match: { product: new mongoose.Types.ObjectId(productId) } },
+    { $group: { 
+        _id: "$product", 
+        avg: { $avg: "$rating" }, 
+        count: { $sum: 1 } 
+    }}
+  ])
 
-export {createProduct,updateProduct,getAllProduct,getProductById,deleteProduct,uploadProductImages}
+  const avg   = result[0]?.avg   ?? 0
+  const count = result[0]?.count ?? 0
+
+  await Product.findByIdAndUpdate(productId, {
+    averageRating: Math.round(avg * 10) / 10,
+    totalReviews:  count
+  })
+}
+export {createProduct,updateProduct,getAllProduct,getProductById,deleteProduct,uploadProductImages,updateProductRating}

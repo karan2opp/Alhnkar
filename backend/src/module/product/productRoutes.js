@@ -2,9 +2,9 @@ import {Router} from "express"
 import { parseFormData } from "./productMiddleware.js"
 import { authorize,authenticate } from "../auth/authMiddleware.js"
 import validate from "../../common/middleware/validateMiddleware.js"
-import { createProductDto } from "./dto/createProductDto.js"
+import { CreateProductDto } from "./dto/createProductDto.js"
 import * as controller from "./productController.js"
-import { updateProductDto } from "./dto/updateProductDto.js"
+import { UpdateProductDto } from "./dto/updateProductDto.js"
 import { upload } from "../../common/middleware/multer.middleware.js"
 const router=Router()
 
@@ -15,7 +15,7 @@ router.post(
   authorize("admin"),
   upload.array("images", 5),
   parseFormData,
-  validate(createProductDto),
+  validate(CreateProductDto),
   controller.createProduct
 )
 // update product details
@@ -25,7 +25,7 @@ router.patch(
   authorize("admin"),
   upload.array("images", 5),
   parseFormData,
-  validate(updateProductDto),
+  validate(UpdateProductDto),
   controller.updateProduct
 )
 // update product images
