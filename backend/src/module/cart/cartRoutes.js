@@ -8,6 +8,6 @@ import validate from "../../common/middleware/validateMiddleware.js";
 const router=Router();
 
 router.post("/addToCart",authenticate,validate(addToCartDto), controller.addToCart)
-router.post("/updateCart",authenticate,validate(updateCartDto),controller.updateCart)
+router.post("/updateCart:id",authenticate,validate(updateCartDto),controller.updateCart)
 
 export default router;

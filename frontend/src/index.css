@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: rgb(197 160 89);   /* gold */
+  --color-bg: rgb(250 249 246);       /* cream */
+  --color-text: rgb(44 44 44);        /* main text */
+  --color-accent: rgb(139 0 0);       /* red */
+  --color-surface: rgb(255 255 255);  /* cards / inputs */
+}
+.input {
+  @apply w-full px-4 py-2 border border-primary/20 rounded bg-surface text-text outline-none;
+}

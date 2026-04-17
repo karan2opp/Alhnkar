@@ -7,7 +7,17 @@ import addressRoute from "./src/module/address/addressRoutes.js"
 import orderRoute from "./src/module/orders/orderRoutes.js"
 import cartRoute from "./src/module/cart/cartRoutes.js"
 import reviewRoute from "./src/module/review/reviewRoutes.js"
+import cors from "cors"
+
 const app=express()
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, // frontend URL
+    credentials: true, // allow cookies / auth tokens
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
