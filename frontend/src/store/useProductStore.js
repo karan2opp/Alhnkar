@@ -9,6 +9,10 @@ export const useProductStore = create((set) => ({
   selectedProduct: null,
   loading: false,
   error: null,
+  setSelectedProduct: (product) =>
+  set({
+    selectedProduct: product,
+  }),
 
   fetchProducts: () => getAllProducts(set),
 

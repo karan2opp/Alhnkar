@@ -90,3 +90,18 @@ if (itemIndex === -1) {
 }
 
 
+export const fetchCart = async (userId) => {
+  const cart = await Cart.findOne({ user: userId })
+    .populate("items.product", "title images price isActive")
+
+  if (!cart) return { items: [], total: 0 }
+
+  // filter out inactive products
+  const activeItems = cart.items.filter(item => item.product?.isActive)
+
+  const total = activeItems.reduce(
+    (acc, item) => acc + item.product.price * item.quantity, 0
+  )
+
+  return { items: activeItems, total }
+}

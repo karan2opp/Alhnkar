@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import {
   addToCart,
-  removeFromCart,
+  updateCart,
   fetchCart,
 } from "../cart/cart.service";
 
@@ -29,14 +29,8 @@ export const useCartStore = create((set) => ({
   */
   addProductToCart: (payload) => addToCart(set, payload),
 
-  /*
-    Remove item from cart
-
-    example:
-    cartItemId
-  */
-  removeProductFromCart: (cartItemId) =>
-    removeFromCart(set, cartItemId),
+updateCartItem: (payload) =>
+  updateCart(set, payload),
 
   /*
     Clear local cart state on logout

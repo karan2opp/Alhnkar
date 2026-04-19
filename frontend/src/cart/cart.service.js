@@ -12,8 +12,9 @@ export const fetchCart = async (set) => {
       error: null,
     });
 
-    const res = await api.get("/cart");
-
+    const res = await api.get("/cart/getCart");
+  
+  
     /*
       Expected backend response:
 
@@ -22,9 +23,11 @@ export const fetchCart = async (set) => {
         data: [...]
       }
     */
+  
+   
 
     set({
-      cartItems: res.data.data,
+      cartItems: res.data.data.items,
       loading: false,
     });
   } catch (error) {
@@ -64,28 +67,29 @@ export const addToCart = async (set, payload) => {
   }
 };
 
-/*
-  Remove product from cart
-*/
-export const removeFromCart = async (set, cartItemId) => {
+
+export const updateCart = async (
+  set,
+  payload
+) => {
   try {
     set({
       loading: true,
       error: null,
     });
 
-    await api.delete(`/cart/updateCart/${cartItemId}`);
+    await api.post(
+      "/cart/updateCart",
+      payload
+    );
 
-    /*
-      Refresh cart again
-    */
     await fetchCart(set);
   } catch (error) {
     set({
       loading: false,
       error:
         error.response?.data?.message ||
-        "Failed to remove item",
+        "Failed to update cart",
     });
   }
 };

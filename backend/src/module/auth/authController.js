@@ -40,7 +40,11 @@ const verifyEmail=async(req,res)=>{
 
 const refreshToken = async (req, res) => {
   const token = req.cookies?.refreshToken;
+  
+; 
   const { accessToken } = await authService.refresh(token);
+ 
+  
   ApiResponse.ok(res, "Token refreshed", { accessToken });
 };
 
@@ -57,7 +61,12 @@ const resetPassword = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
+   
+   
   const user = await authService.getMe(req.user.id);
+ 
+ 
+  
   ApiResponse.ok(res, "User profile", user);
 };
 

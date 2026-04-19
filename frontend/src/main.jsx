@@ -1,41 +1,61 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
 import "./index.css";
-import { createBrowserRouter,RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import MyOrdersPage from "./order/MyOrderPage";
+import App from "./App";
 import HomePage from "./home/HomePage";
-import ProductCard from "./product/ProductCard";
 import CartPage from "./cart/CartPage";
 import CheckoutPage from "./order/CheckoutPage";
-
 import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import ProductPage from "./product/ProductPage";
-const router=createBrowserRouter([
+import ProductDetailPage from "./product/ProductDetailPage";
+
+const router = createBrowserRouter([
   {
-    path:"/",
-    element:<HomePage />
-  },
- {
-  path: "/product",
-  element: <ProductPage />
-},
-  {
-    path:"/Cart",
-    element:<CartPage />
+    path: "/",
+    element: <HomePage />,
   },
   {
-    path:"/Order",
-    element:<CheckoutPage />
+    path: "/product",
+    element: <ProductPage />,
   },
   {
-    path:"/login",
-    element:<Login />
+    path: "/cart",
+    element: <CartPage />,
   },
-  {path:"/signup",
-    element:<Signup />
-  }
-])
-ReactDOM.createRoot(document.getElementById("root")).render(
- <RouterProvider router={router} />
+  {
+    path: "/order",
+    element: <CheckoutPage />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
+  },
+  {
+    path: "/productDetail/:id",
+    element: <ProductDetailPage />,
+  },
+  {
+  path: "/my-orders",
+  element: <MyOrdersPage />
+}
+]);
+
+ReactDOM.createRoot(
+  document.getElementById("root")
+).render(
+ 
+    <App>
+      <RouterProvider router={router} />
+    </App>
+  
 );

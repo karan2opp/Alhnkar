@@ -140,6 +140,8 @@ const refresh = async (token) => {
   return { accessToken };
 };
 const getMe = async (userId) => {
+ 
+  
   const user = await User.findById(userId);
   if (!user) throw ApiError.notFound("User not found");
   return user;

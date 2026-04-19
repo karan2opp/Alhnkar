@@ -10,9 +10,10 @@ export const getAllProducts = async (set) => {
     const res = await api.get("/products/getAllProducts");
 
     set({
-      products: res.data,
+     products: res.data.data.products,
       loading: false,
     });
+   
   } catch (error) {
     set({
       loading: false,
@@ -20,6 +21,8 @@ export const getAllProducts = async (set) => {
         error.response?.data?.message ||
         "Failed to fetch products",
     });
+    console.log(error);
+    
   }
 };
 

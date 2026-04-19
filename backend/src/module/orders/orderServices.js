@@ -55,7 +55,7 @@ export const updateOrder = async (orderId, data) => {
   }
 
   // prevent going backwards in status
-  const statusFlow = ["pending", "confirmed", "cancelled"]
+  const statusFlow = ["pending", "delivered", "cancelled"]
   const currentIndex = statusFlow.indexOf(order.status)
   const newIndex = statusFlow.indexOf(data.status)
 
@@ -92,13 +92,20 @@ export const getOrderById = async (orderId, userId) => {
   return order
 }
 
-export const getAllOrders = async (userId) => {
-  const orders = await Order.find({ user: userId })
+export const getAllOrders = async (userId, query) => {
+  const { status } = query
+
+  const filter = { user: userId }
+
+  // skip filter if "allOrders" or nothing passed
+  if (status && status !== "allOrders") filter.status = status
+
+  const orders = await Order.find(filter)
     .populate("items.product", "title images price")
     .sort({ createdAt: -1 })
+
   return orders
 }
-
 // admin — get all orders from all users
 export const getAllOrdersAdmin = async (query) => {
   const { status, page = 1, limit = 10 } = query

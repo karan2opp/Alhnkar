@@ -21,10 +21,10 @@ export const getOrderById = async (req, res) => {
 }
 
 export const getAllOrders = async (req, res) => {
-  const orders = await orderService.getAllOrders(req.user.id)
+  
+  const orders = await orderService.getAllOrders(req.user.id, req.query)
   ApiResponse.ok(res, "Orders fetched successfully", orders)
 }
-
 export const getAllOrdersAdmin = async (req, res) => {
   const { orders, hasMore } = await orderService.getAllOrdersAdmin(req.query)
   ApiResponse.ok(res, "Orders fetched successfully", { orders, hasMore })

@@ -1,20 +1,55 @@
-export default function AddressForm() {
+// src/order/AddressForm.jsx
+
+export default function AddressForm({
+  addressId,
+  setAddressId,
+}) {
+  /*
+    Temporary hardcoded address
+
+    Later connect with Address Module
+  */
+
+  const addresses = [
+    {
+      _id: "address123",
+      label:
+        "Home - Kurukshetra, Haryana",
+    },
+    {
+      _id: "address456",
+      label:
+        "Office - Pehowa, Haryana",
+    },
+  ];
+
   return (
     <div>
-      <h2 className="text-lg font-medium mb-6">Shipping Address</h2>
+      <h2 className="text-lg font-medium mb-6">
+        Select Address
+      </h2>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="space-y-4">
+        {addresses.map((address) => (
+          <label
+            key={address._id}
+            className="block"
+          >
+            <input
+              type="radio"
+              checked={
+                addressId === address._id
+              }
+              onChange={() =>
+                setAddressId(address._id)
+              }
+            />
 
-        <input placeholder="First Name" className="input" />
-        <input placeholder="Last Name" className="input" />
-
-        <input
-          placeholder="House number and street name"
-          className="input md:col-span-2"
-        />
-
-        <input placeholder="City" className="input" />
-        <input placeholder="Pincode" className="input" />
+            <span className="ml-2">
+              {address.label}
+            </span>
+          </label>
+        ))}
       </div>
     </div>
   );

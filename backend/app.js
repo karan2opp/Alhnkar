@@ -30,6 +30,9 @@ app.use("/api/orders",orderRoute)
 app.use("/api/cart",cartRoute)
 app.use("/api/review",reviewRoute)
 app.use((err, req, res, next) => {
+  console.log(err);
+  
   res.status(500).json({ message: err.message });
+
 });
 export default app;

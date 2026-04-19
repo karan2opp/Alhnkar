@@ -1,9 +1,20 @@
 import { useUIStore } from "../store/useUIStore";
-import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
+import {
+  Search,
+  ShoppingBag,
+  Menu,
+  X,
+} from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 export default function Navbar() {
   const { isSearchOpen, toggleSearch } = useUIStore();
+  const { isLoggedIn, logout } = useAuthStore();
+
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   return (
     <nav className="bg-bg text-text px-6 py-4 border-b border-primary/20">
@@ -16,10 +27,41 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-8 text-sm tracking-wide">
-          <li className="cursor-pointer hover:text-primary">Home</li>
-          <li className="cursor-pointer hover:text-primary">Category</li>
-          <li className="cursor-pointer hover:text-primary">Products</li>
-          <li className="cursor-pointer hover:text-primary">About Us</li>
+          <li>
+            <Link
+              to="/"
+              className="cursor-pointer hover:text-primary"
+            >
+              Home
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/category"
+              className="cursor-pointer hover:text-primary"
+            >
+              Category
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/product"
+              className="cursor-pointer hover:text-primary"
+            >
+              Products
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/about"
+              className="cursor-pointer hover:text-primary"
+            >
+              About Us
+            </Link>
+          </li>
         </ul>
 
         {/* Right Section */}
@@ -27,33 +69,99 @@ export default function Navbar() {
 
           {/* Search */}
           <div className="relative">
-            <Search className="cursor-pointer" onClick={toggleSearch} />
+            <Search
+              className="cursor-pointer"
+              onClick={toggleSearch}
+            />
 
             <input
               type="text"
               placeholder="Search..."
-              className={`absolute right-7 top-0 transition-all duration-300 
-              ${isSearchOpen ? "w-48 opacity-100" : "w-0 opacity-0"} 
-              px-3 py-1 border border-primary/30 rounded bg-surface text-text outline-none`}
+              className={`absolute right-7 top-0 transition-all duration-300
+              ${
+                isSearchOpen
+                  ? "w-48 opacity-100"
+                  : "w-0 opacity-0"
+              }
+              px-3 py-1 border border-primary/30 rounded
+              bg-surface text-text outline-none`}
             />
           </div>
 
           {/* Cart */}
           <div className="relative cursor-pointer">
-            <ShoppingBag />
-            <span className="absolute -top-2 -right-2 bg-primary text-bg text-xs px-1 rounded-full">
-              2
-            </span>
+            <Link to="/cart">
+              <ShoppingBag />
+
+              <span className="absolute -top-2 -right-2 bg-primary text-bg text-xs px-1 rounded-full">
+                2
+              </span>
+            </Link>
           </div>
 
-          {/* Profile */}
-          <User className="cursor-pointer" />
+          {/* Profile Hamburger */}
+          <div className="relative hidden md:block ">
+            <button
+              onClick={() =>
+                setProfileMenuOpen(!profileMenuOpen)
+              }
+              className="cursor-pointer"
+            >
+              <Menu />
+            </button>
+
+            {profileMenuOpen && (
+              <div className="absolute right-0 mt-3 w-44 bg-surface border border-primary/20 rounded-lg shadow-lg p-3 z-50">
+                <button className="px-3 py-2 block  hover:bg-primary/10">Profile</button>
+                
+                {!isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="block px-3 py-2 text-sm hover:bg-primary/10 rounded"
+                      onClick={() =>
+                        setProfileMenuOpen(false)
+                      }
+                    >
+                      Login
+                    </Link>
+
+                    <Link
+                      to="/signup"
+                      className="block px-3 py-2 text-sm hover:bg-primary/10 rounded"
+                      onClick={() =>
+                        setProfileMenuOpen(false)
+                      }
+                    >
+                      Signup
+                    </Link>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      logout();
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Mobile Toggle */}
           {menuOpen ? (
-            <X className="md:hidden cursor-pointer" onClick={() => setMenuOpen(false)} />
+            <X
+              className="md:hidden cursor-pointer"
+              onClick={() => setMenuOpen(false)}
+            />
           ) : (
-            <Menu className="md:hidden cursor-pointer" onClick={() => setMenuOpen(true)} />
+            <Menu
+              className="md:hidden cursor-pointer"
+              onClick={() => setMenuOpen(true)}
+            />
           )}
         </div>
       </div>
@@ -61,10 +169,12 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-4 text-sm">
-          <span>Home</span>
-          <span>Category</span>
-          <span>Products</span>
-          <span>About Us</span>
+          <Link to="/">Home</Link>
+          <Link to="/category">Category</Link>
+          <Link to="/product">Products</Link>
+          <Link to="/about">About Us</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/signup">Singup</Link>
         </div>
       )}
     </nav>

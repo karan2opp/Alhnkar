@@ -6,15 +6,38 @@ import User from "./authModels.js";
 const authenticate = async (req, res, next) => {
   let token;
 
+  // 1. Check Bearer token
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
   }
 
-  if (!token) throw ApiError.unauthorized("Not authenticated");
 
+  // 2. Check cookie fallback
+
+  
+  if (!token && req.cookies?.accessToken) {
+    token = req.cookies.accessToken;
+   
+    
+  }
+
+
+
+
+  if (!token) {
+  
+    
+    throw ApiError.unauthorized("Not authenticated");
+  }
+ 
   const decoded = verifyAccessToken(token);
+
   const user = await User.findById(decoded.id);
-  if (!user) throw ApiError.unauthorized("User no longer exists");
+
+
+  if (!user) {
+    throw ApiError.unauthorized("User no longer exists");
+  }
 
   req.user = {
     id: user._id,
@@ -22,9 +45,9 @@ const authenticate = async (req, res, next) => {
     name: user.name,
     email: user.email,
   };
+
   next();
 };
-
 // Higher-order function — returns middleware configured with allowed roles
 const authorize = (...roles) => {
   return (req, res, next) => {

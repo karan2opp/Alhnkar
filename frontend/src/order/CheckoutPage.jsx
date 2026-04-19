@@ -1,33 +1,91 @@
+// src/order/CheckoutPage.jsx
+
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 import AddressForm from "./AddressForm";
 import ShippingMethod from "./ShippingMethod";
 import PaymentForm from "./PaymentForm";
 import OrderSummary from "./OrderSummary";
+import Navbar from "../components/Navbar"
+import { useOrderStore } from "../store/useOrderStore";
 
 export default function CheckoutPage() {
-  return (
-    <div className="bg-bg text-text min-h-screen px-4 md:px-10 py-10">
+  const { state } = useLocation();
+  const navigate = useNavigate();
 
-      {/* Title */}
-      <div className="mb-10">
+  const { placeUserOrder } = useOrderStore();
+
+  const [addressId, setAddressId] =
+    useState("");
+
+  const [paymentMethod, setPaymentMethod] =
+    useState("cod");
+
+  if (!state?.product) {
+    return <div>No order found</div>;
+  }
+
+  const {
+    product,
+    size,
+    quantity,
+  } = state;
+
+  const handlePlaceOrder = async () => {
+    if (!addressId) {
+      alert("Please select address");
+      return;
+    }
+
+    const payload = {
+      items: [
+        {
+          product: product._id,
+          size,
+          quantity,
+        },
+      ],
+      addressId,
+      paymentMethod,
+    };
+
+    await placeUserOrder(payload);
+
+    alert("Order placed successfully");
+
+    navigate("/my-orders");
+  };
+
+  return (
+    <div className="bg-bg text-text min-h-screen px-4 md:px-10 ">
+      <Navbar />
+      <div className=" py-10">
         <h1 className="text-2xl md:text-3xl font-serif">
           Finalizing Beauty
         </h1>
-        <p className="text-sm text-text/60">
-          Review your selection and provide delivery details.
-        </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-10">
-
-        {/* Left */}
         <div className="lg:col-span-2 space-y-10">
-          <AddressForm />
+          <AddressForm
+            addressId={addressId}
+            setAddressId={setAddressId}
+          />
+
           <ShippingMethod />
-          <PaymentForm />
+
+          <PaymentForm
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+          />
         </div>
 
-        {/* Right */}
-        <OrderSummary />
+        <OrderSummary
+          product={product}
+          quantity={quantity}
+          onPlaceOrder={handlePlaceOrder}
+        />
       </div>
     </div>
   );
