@@ -70,6 +70,15 @@ const getMe = async (req, res) => {
   ApiResponse.ok(res, "User profile", user);
 };
 
+export const updateProfile = async (req, res) => {
+  const user = await authService.updateProfile(req.user.id, req.body, req.file)
+  ApiResponse.ok(res, "Profile updated successfully", user)
+}
+
+export const getProfile = async (req, res) => {
+  const user = await authService.getProfile(req.user.id)
+  ApiResponse.ok(res, "Profile fetched successfully", user)
+}
 export {
   register,
   login,

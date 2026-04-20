@@ -32,4 +32,8 @@ router.delete(
   authorize("admin"),
   controller.deleteCategory
 )
+router.get(
+  "/",
+  controller.getAllCategories  // public route — no auth needed
+)
 export default router;

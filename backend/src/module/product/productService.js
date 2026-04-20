@@ -131,14 +131,16 @@ const deleteProduct = async (productId) => {
 }
 
 const getAllProduct = async (query) => {
-  const { category, gender, page = 1, limit = 10 } = query
+  const { category, gender, page = 1, limit = 10, title } = query
 
   const filter = { isActive: true }
   if (category) filter.category = category
   if (gender)   filter.gender   = gender
-
+  if (title)    filter.title = { $regex: title, $options: "i" } // ✅ case insensitive search
+   console.log(category);
+   
   const products = await Product.find(filter)
-    .populate("category", "name") 
+    .populate("category", "name")
     .skip((page - 1) * limit)
     .limit(Number(limit) + 1)
     .sort({ createdAt: -1 })

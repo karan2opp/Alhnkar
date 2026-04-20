@@ -15,3 +15,11 @@ export const deleteCategory = async (req, res) => {
   const category = await categoryService.deleteCategory(req.params.id)
   ApiResponse.ok(res, "Category deleted successfully", category)
 }
+export const getAllCategories = async (req, res) => {
+  
+  
+  const categories = await categoryService.getAllCategories(req.query)
+
+
+  ApiResponse.ok(res, "Categories fetched successfully", categories)
+}

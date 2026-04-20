@@ -31,7 +31,15 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false,
-    },
+    },avatar: {
+    url:      { type: String },
+    publicId: { type: String }
+  },
+  phone: {
+  type: String,
+  trim: true,
+  default: "",
+},
     
     verificationToken: { type: String, select: false },
     refreshToken: { type: String, select: false },

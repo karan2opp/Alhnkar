@@ -11,9 +11,6 @@ export default function ProductCard({ product }) {
           className="w-full h-[320px] object-cover group-hover:scale-105 transition duration-500"
         />
 
-        <span className="absolute top-3 left-3 bg-bg text-text text-[10px] px-3 py-1 rounded-sm tracking-wider">
-          {product.badge}
-        </span>
 
       </div>
 

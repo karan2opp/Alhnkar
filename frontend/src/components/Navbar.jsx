@@ -7,14 +7,33 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const { isSearchOpen, toggleSearch } = useUIStore();
   const { isLoggedIn, logout } = useAuthStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] =
+    useState(false);
+  const [searchText, setSearchText] =
+    useState("");
+
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    if (
+      e.key === "Enter" &&
+      searchText.trim()
+    ) {
+      navigate(
+        `/search?title=${searchText}`
+      );
+
+      setSearchText("");
+      toggleSearch();
+    }
+  };
 
   return (
     <nav className="bg-bg text-text px-6 py-4 border-b border-primary/20">
@@ -76,6 +95,11 @@ export default function Navbar() {
 
             <input
               type="text"
+              value={searchText}
+              onChange={(e) =>
+                setSearchText(e.target.value)
+              }
+              onKeyDown={handleSearch}
               placeholder="Search..."
               className={`absolute right-7 top-0 transition-all duration-300
               ${
@@ -100,10 +124,12 @@ export default function Navbar() {
           </div>
 
           {/* Profile Hamburger */}
-          <div className="relative hidden md:block ">
+          <div className="relative hidden md:block">
             <button
               onClick={() =>
-                setProfileMenuOpen(!profileMenuOpen)
+                setProfileMenuOpen(
+                  !profileMenuOpen
+                )
               }
               className="cursor-pointer"
             >
@@ -112,15 +138,27 @@ export default function Navbar() {
 
             {profileMenuOpen && (
               <div className="absolute right-0 mt-3 w-44 bg-surface border border-primary/20 rounded-lg shadow-lg p-3 z-50">
-                <button className="px-3 py-2 block  hover:bg-primary/10">Profile</button>
-                
+                <Link to="/profile">
+                  <button className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded">
+                    Profile
+                  </button>
+                </Link>
+
+                <Link to="/my-orders">
+                  <button className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded">
+                    My Orders
+                  </button>
+                </Link>
+
                 {!isLoggedIn ? (
                   <>
                     <Link
                       to="/login"
                       className="block px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() =>
-                        setProfileMenuOpen(false)
+                        setProfileMenuOpen(
+                          false
+                        )
                       }
                     >
                       Login
@@ -130,7 +168,9 @@ export default function Navbar() {
                       to="/signup"
                       className="block px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() =>
-                        setProfileMenuOpen(false)
+                        setProfileMenuOpen(
+                          false
+                        )
                       }
                     >
                       Signup
@@ -140,7 +180,9 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       logout();
-                      setProfileMenuOpen(false);
+                      setProfileMenuOpen(
+                        false
+                      );
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
                   >
@@ -155,12 +197,16 @@ export default function Navbar() {
           {menuOpen ? (
             <X
               className="md:hidden cursor-pointer"
-              onClick={() => setMenuOpen(false)}
+              onClick={() =>
+                setMenuOpen(false)
+              }
             />
           ) : (
             <Menu
               className="md:hidden cursor-pointer"
-              onClick={() => setMenuOpen(true)}
+              onClick={() =>
+                setMenuOpen(true)
+              }
             />
           )}
         </div>
@@ -170,11 +216,19 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-4 text-sm">
           <Link to="/">Home</Link>
-          <Link to="/category">Category</Link>
-          <Link to="/product">Products</Link>
-          <Link to="/about">About Us</Link>
+          <Link to="/category">
+            Category
+          </Link>
+          <Link to="/product">
+            Products
+          </Link>
+          <Link to="/about">
+            About Us
+          </Link>
           <Link to="/login">Login</Link>
-          <Link to="/signup">Singup</Link>
+          <Link to="/signup">
+            Signup
+          </Link>
         </div>
       )}
     </nav>

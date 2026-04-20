@@ -146,5 +146,27 @@ const getMe = async (userId) => {
   if (!user) throw ApiError.notFound("User not found");
   return user;
 };
+export const updateProfile = async (userId, data, imageFile) => {
+  const user = await User.findById(userId)
+  if (!user) throw ApiError.notFound("User not found")
 
+  if (data.name)  user.name  = data.name
+  if (data.phone) user.phone = data.phone
+
+  if (imageFile) {
+    if (user.avatar?.publicId) {
+      await deleteFromCloudinary(user.avatar.publicId)
+    }
+    user.avatar = await uploadToCloudinary(imageFile.buffer, "avatars")
+  }
+
+  await user.save()
+  return user.toObject()
+}
+
+export const getProfile = async (userId) => {
+  const user = await User.findById(userId).select("-password -refreshToken")
+  if (!user) throw ApiError.notFound("User not found")
+  return user
+}
 export {login,register,logout,verifyEmail,resetPassword,refresh,getMe,forgotPassword}

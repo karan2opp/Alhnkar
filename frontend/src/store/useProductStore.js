@@ -14,7 +14,8 @@ export const useProductStore = create((set) => ({
     selectedProduct: product,
   }),
 
-  fetchProducts: () => getAllProducts(set),
+fetchProducts: (filters) =>
+  getAllProducts(set, filters),
 
   fetchProductById: (productId) =>
     getProductById(set, productId),

@@ -14,6 +14,9 @@ import Signup from "./auth/Signup";
 import Login from "./auth/Login";
 import ProductPage from "./product/ProductPage";
 import ProductDetailPage from "./product/ProductDetailPage";
+import ProfilePage from "./profile/ProfilePage";
+import SearchPage from "./product/SearchPage";
+import CategoryPage from "./category/CategoryPage";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +50,17 @@ const router = createBrowserRouter([
   {
   path: "/my-orders",
   element: <MyOrdersPage />
+},{
+  path:"profile",
+  element:<ProfilePage/>
+},
+{
+  path: "/search",
+  element: <SearchPage />
+},
+{
+  path:"/category",
+  element:<CategoryPage />
 }
 ]);
 
