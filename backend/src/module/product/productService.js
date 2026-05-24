@@ -137,7 +137,7 @@ const getAllProduct = async (query) => {
   if (category) filter.category = category
   if (gender)   filter.gender   = gender
   if (title)    filter.title = { $regex: title, $options: "i" } // ✅ case insensitive search
-   console.log(category);
+   
    
   const products = await Product.find(filter)
     .populate("category", "name")

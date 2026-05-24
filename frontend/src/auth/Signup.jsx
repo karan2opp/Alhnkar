@@ -1,8 +1,9 @@
 import { useState } from "react";
 import AuthLayout from "./AuthLayout";
 import api from "../utils/axios.js";
-
+import     {useNavigate} from "react-router-dom"
 export default function Signup() {
+  const navigate=useNavigate()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,7 +29,7 @@ export default function Signup() {
 
       console.log("Signup success:", res.data);
 
-      // later → navigate("/login")
+      navigate("/login")
     } catch (error) {
       console.log(
         error.response?.data?.message || "Signup failed"
@@ -90,9 +91,9 @@ export default function Signup() {
         </button>
       </form>
 
-      <p className="text-sm text-text/60 mt-6 text-center">
+      <p className="text-sm text-text/60 mt-6 text-center cursor-pointer" onClick={()=>{ navigate("/login")}}>
         Already a member?{" "}
-        <span className="text-primary cursor-pointer">
+        <span className="text-primary " >
           Sign In
         </span>
       </p>

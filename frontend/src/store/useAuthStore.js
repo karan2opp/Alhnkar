@@ -1,34 +1,59 @@
 import { create } from "zustand";
-import { getMe, refreshToken } from "../auth/auth.service";
+import { getMe, refreshToken,logoutService } from "../auth/auth.service";
 
 export const useAuthStore = create((set) => ({
-  user: null,
-  accessToken: null,
+  // ── State (all fields declared upfront) ─────────────
+  user: null,              // { _id, name, email, role }
+  accessToken: null,       // 🔐 Memory-only (no persist)
   isLoggedIn: false,
-  isAdmin: false,
+  isAdmin: false,          // Will be computed on setUser/getMe
+  loading: false,          // ← Added: was missing but used in getMe
+  error: null,             // ← Added: was missing but used in getMe
 
-  setUser: (userData, token) =>
+  // ── Actions ─────────────────────────────────────────
+
+  /**
+   * Set user + token after login
+   */
+  setUser: (userData, token) => {
+    const isAdmin = userData?.role === "admin";
     set({
       user: userData,
       accessToken: token,
       isLoggedIn: true,
-      isAdmin: userData?.role === "admin",
-    }),
+      isAdmin,
+      loading: false,
+      error: null,
+    });
+  },
 
-  setAccessToken: (token) =>
-    set({
-      accessToken: token,
-    }),
+  /**
+   * Update access token only
+   */
+  setAccessToken: (token) => set({ accessToken: token }),
 
+  /**
+   * Fetch current user from API
+   */
   fetchCurrentUser: () => getMe(set),
 
+  /**
+   * Refresh access token
+   */
   refreshAccessToken: () => refreshToken(set),
 
-  logout: () =>
-    set({
-      user: null,
-      accessToken: null,
-      isLoggedIn: false,
-      isAdmin: false,
-    }),
+  /**
+   * Logout — clear all auth state
+   */
+logout: () => logoutService(set),
+
+  // ── Optional: Helper to clear error ─────────────────
+  clearError: () => set({ error: null }),
 }));
+
+// ── Helper Hooks (for components) ─────────────────────
+export const useIsAdmin = () => 
+  useAuthStore((state) => state.user?.role === "admin");
+
+export const useUserRole = () => 
+  useAuthStore((state) => state.user?.role);

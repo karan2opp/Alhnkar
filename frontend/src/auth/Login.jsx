@@ -3,6 +3,8 @@ import AuthLayout from "./AuthLayout";
 import api from "../utils/axios";
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { showToast } from "../utils/showToast";
 // later
 // import { useNavigate } from "react-router-dom";
 
@@ -33,29 +35,26 @@ export default function Login() {
 
       const res = await api.post("/auth/login", formData);
 
-      /*
-        Expected backend response example:
+     
+console.log(res);
 
-        {
-          user: {
-            name: "Karan",
-            email: "karan@gmail.com",
-            role: "admin"
-          }
-        }
-      */
-
-      setUser(res.data.user);
-
-      console.log("Login Success:", res.data);
-
-      // later:
+    // ✅ Fix
+const { user, accessToken } = res.data.data;
+setUser(user, accessToken);
+showToast.success(`Signed in as ${user.email}`);
+      
+      // Small delay so user sees toast before redirect
+      setTimeout(() => navigate("/"), 1200);
+    
       navigate("/");
 
     } catch (error) {
+        const errorMsg = error.response?.data?.message || "Invalid email or password";
+      showToast.error(errorMsg);
       console.log(
         error.response?.data?.message || "Login failed"
       );
+
     } finally {
       setLoading(false);
     }
@@ -107,9 +106,9 @@ export default function Login() {
       </form>
 
       {/* Footer */}
-      <p className="text-sm text-text/60 mt-6 text-center">
+      <p className="text-sm text-text/60 mt-6 text-center cursor-pointer" onClick={()=>{navigate("/signup")}}>
         Don’t have an account?{" "}
-        <span className="text-primary cursor-pointer">
+        <span className="text-primary " >
           Create one
         </span>
       </p>

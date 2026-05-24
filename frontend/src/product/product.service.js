@@ -2,6 +2,8 @@ import api from "../utils/axios.js"
 
 // product.service.js
 
+// product.service.js
+
 export const getAllProducts = async (
   set,
   filters = {}
@@ -14,17 +16,31 @@ export const getAllProducts = async (
 
     const query = new URLSearchParams();
 
-    // if category exists, prioritize category filter
     if (filters.category) {
       query.append(
         "category",
         filters.category
       );
-    } else if (filters.title) {
-      // only use title when category is not present
+    }
+
+    if (filters.title) {
       query.append(
         "title",
         filters.title
+      );
+    }
+
+    if (filters.page) {
+      query.append(
+        "page",
+        filters.page
+      );
+    }
+
+    if (filters.limit) {
+      query.append(
+        "limit",
+        filters.limit
       );
     }
 
@@ -32,11 +48,17 @@ export const getAllProducts = async (
       `/products/getAllProducts?${query.toString()}`
     );
 
+    set((state) => ({
+      products:
+        filters.page && filters.page > 1
+          ? [
+              ...state.products,
+              ...res.data.data.products,
+            ]
+          : res.data.data.products,
 
-    set({
-      products: res.data.data.products,
       loading: false,
-    });
+    }));
   } catch (error) {
     set({
       loading: false,

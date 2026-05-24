@@ -25,11 +25,21 @@ const login=async(req,res)=>{
 }
 
 
-const logout=async(req,res)=>{
-  await authService.logout(req.body.id)
-   res.clearCookie("refreshToken");
-  ApiResponse.ok(res, "Logged out successfully");
-}
+const logout = async (req, res) => {
+  try {
+    await authService.logout(req.user.id); // use req.user.id from auth middleware, not req.body.id
+    
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return ApiResponse.ok(res, "Logged out successfully");
+  } catch (err) {
+    next(err);
+  }
+};
 
 const verifyEmail=async(req,res)=>{
   await authService.verifyEmail(req.params.token)

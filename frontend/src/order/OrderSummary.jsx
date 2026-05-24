@@ -45,7 +45,7 @@ export default function OrderSummary({
       </div>
 
       <button
-        onClick={onPlaceOrder}
+        onClick={()=>onPlaceOrder()}
         className="w-full bg-primary text-bg py-3 mt-6"
       >
         PLACE ORDER

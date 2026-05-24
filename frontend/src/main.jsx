@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import  { Toaster } from 'react-hot-toast';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -17,6 +18,8 @@ import ProductDetailPage from "./product/ProductDetailPage";
 import ProfilePage from "./profile/ProfilePage";
 import SearchPage from "./product/SearchPage";
 import CategoryPage from "./category/CategoryPage";
+import AdminDashboard from "./admin/AdminDashboard";
+import Admin from "./admin/Admin";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +64,10 @@ const router = createBrowserRouter([
 {
   path:"/category",
   element:<CategoryPage />
+},
+{
+  path:"/admin",
+  element:<Admin />
 }
 ]);
 
@@ -69,6 +76,7 @@ ReactDOM.createRoot(
 ).render(
  
     <App>
+      <Toaster />
       <RouterProvider router={router} />
     </App>
   

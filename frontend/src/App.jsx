@@ -10,13 +10,14 @@ function App({ children }) {
   useEffect(() => {
     const initializeAuth = async () => {
       const refreshed = await refreshAccessToken();
-
+       
   
-
+       
       if (refreshed) {
-        await fetchCurrentUser();
-
-        
+        const res=await fetchCurrentUser();
+      
+       console.log(res);
+                
       }
     };
 

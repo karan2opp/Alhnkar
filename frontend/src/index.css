@@ -5,7 +5,16 @@
   --color-bg: rgb(250 249 246);       /* cream */
   --color-text: rgb(44 44 44);        /* main text */
   --color-accent: rgb(139 0 0);       /* red */
+  --color-accent-dark: rgb(90 0 0);   /* dark red */
   --color-surface: rgb(255 255 255);  /* cards / inputs */
+  --color-gold: rgb(197 179 88);      /* sidebar gold */
+  --color-gold-light: rgb(247 242 220);
+  --color-pri-light: rgb(245 230 230);
+  --color-muted: rgb(122 106 90);
+  --color-border-theme: rgba(139 0 0 / 0.12);
+  --color-sidebar: rgb(26 0 0);
+  --color-stripe: rgb(253 250 246);
+  --font-serif: Georgia, serif;
 }
 .input {
   @apply w-full px-4 py-2 border border-primary/20 rounded bg-surface text-text outline-none;

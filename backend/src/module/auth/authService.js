@@ -57,6 +57,7 @@ const logout=async(userId)=>{
 
 const verifyEmail = async (token) => {
   const trimmed = String(token).trim();
+console.log("hii");
 
   if (!trimmed) {
     throw ApiError.badRequest("Invalid or expired verification token");
