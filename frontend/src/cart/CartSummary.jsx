@@ -1,7 +1,9 @@
 // CartSummary.jsx
 
+import { useNavigate } from "react-router-dom";
+
 export default function CartSummary({ cartItems }) {
-  
+  const navigate=useNavigate()
   const subtotal = cartItems.reduce(
     (total, item) =>
       total +
@@ -44,7 +46,9 @@ export default function CartSummary({ cartItems }) {
         <span>₹{total.toFixed(2)}</span>
       </div>
 
-      <button className="w-full bg-primary text-bg py-3 text-sm tracking-wide hover:opacity-90">
+      <button className="w-full bg-primary text-bg py-3 text-sm tracking-wide hover:opacity-90" onClick={()=>{
+        navigate("/order")
+      }}>
         PROCEED TO CHECKOUT
       </button>
 

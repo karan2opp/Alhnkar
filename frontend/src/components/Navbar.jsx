@@ -1,24 +1,38 @@
 import { useUIStore } from "../store/useUIStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { useCartStore } from "../store/useCartStore"; // ✅ Import cart store
 import {
   Search,
   ShoppingBag,
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // ✅ Added useEffect
 import { Link, useNavigate } from "react-router-dom";
-import { showToast } from "../utils/showToast"; // ✅ Import toast utility
+import { showToast } from "../utils/showToast";
 
 export default function Navbar() {
   const { isSearchOpen, toggleSearch } = useUIStore();
-  const { isLoggedIn, logout } = useAuthStore(); // ✅ logout from store
+  const { isLoggedIn, logout } = useAuthStore();
+  const { cartItems, loading: cartLoading, fetchUserCart } = useCartStore(); // ✅ Get cart state
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
 
   const navigate = useNavigate();
+
+  // ✅ Fetch cart when user logs in
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserCart();
+    }
+  }, [isLoggedIn, fetchUserCart]);
+
+  // ✅ Calculate total quantity in cart (handles multiple items + quantities)
+  const cartCount = cartItems.reduce((total, item) => {
+    return total + (item.quantity || 1);
+  }, 0);
 
   const handleSearch = (e) => {
     if (e.key === "Enter" && searchText.trim()) {
@@ -30,11 +44,10 @@ export default function Navbar() {
 
   // ✅ Mobile logout handler
   const handleMobileLogout = () => {
-    logout(); // Clear auth state
-    setMenuOpen(false); // Close mobile menu
+    logout();
+    setMenuOpen(false);
     showToast.success("Logged out successfully", "Goodbye!", 2000);
     
-    // Redirect after toast is visible
     setTimeout(() => {
       navigate("/");
     }, 1500);
@@ -92,13 +105,17 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Cart */}
+          {/* ✅ Cart - Dynamic Count from Backend */}
           <div className="relative cursor-pointer">
             <Link to="/cart">
               <ShoppingBag />
-              <span className="absolute -top-2 -right-2 bg-primary text-bg text-xs px-1 rounded-full">
-                2
-              </span>
+              
+              {/* ✅ Show badge only if cart has items */}
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-bg text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {cartLoading ? "…" : cartCount}
+                </span>
+              )}
             </Link>
           </div>
 
@@ -173,7 +190,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ✅ Mobile Menu - UPDATED WITH CONDITIONAL LOGOUT */}
+      {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden mt-4 flex flex-col gap-4 text-sm pb-4 border-b border-primary/10">
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
@@ -181,7 +198,7 @@ export default function Navbar() {
           <Link to="/product" onClick={() => setMenuOpen(false)}>Products</Link>
           <Link to="/about" onClick={() => setMenuOpen(false)}>About Us</Link>
           
-          {/* ✅ Conditional Auth Links for Mobile */}
+          {/* Conditional Auth Links for Mobile */}
           {!isLoggedIn ? (
             <>
               <Link 
@@ -215,7 +232,7 @@ export default function Navbar() {
               >
                 My Orders
               </Link>
-              {/* ✅ Mobile Logout Button */}
+              {/* Mobile Logout Button */}
               <button
                 onClick={handleMobileLogout}
                 className="text-left text-accent hover:opacity-80 font-medium transition"

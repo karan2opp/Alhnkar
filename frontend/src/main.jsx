@@ -18,7 +18,6 @@ import ProductDetailPage from "./product/ProductDetailPage";
 import ProfilePage from "./profile/ProfilePage";
 import SearchPage from "./product/SearchPage";
 import CategoryPage from "./category/CategoryPage";
-import AdminDashboard from "./admin/AdminDashboard";
 import Admin from "./admin/Admin";
 
 const router = createBrowserRouter([
