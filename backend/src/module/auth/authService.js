@@ -170,4 +170,5 @@ export const getProfile = async (userId) => {
   if (!user) throw ApiError.notFound("User not found")
   return user
 }
+
 export {login,register,logout,verifyEmail,resetPassword,refresh,getMe,forgotPassword}

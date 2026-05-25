@@ -19,7 +19,8 @@ import ProfilePage from "./profile/ProfilePage";
 import SearchPage from "./product/SearchPage";
 import CategoryPage from "./category/CategoryPage";
 import Admin from "./admin/Admin";
-
+import ForgotPassword from "./auth/ForgotPassword";
+import ResetPassword from "./auth/ResetPassword"
 const router = createBrowserRouter([
   {
     path: "/",
@@ -67,6 +68,13 @@ const router = createBrowserRouter([
 {
   path:"/admin",
   element:<Admin />
+},{
+  path:"/forgot-password",
+  element:<ForgotPassword />
+},
+{
+  path:"/reset-password/:token",
+  element:<ResetPassword />
 }
 ]);
 

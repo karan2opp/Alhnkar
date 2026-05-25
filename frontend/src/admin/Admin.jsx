@@ -5,10 +5,11 @@ import { Icon, MetricCard, StatusBadge } from "./SharedComponent"
 import ProductsPage from "./Products"
 import OrdersPage, { OrderDetailPage } from "./Orders"
 import { useAuthStore } from "../store/useAuthStore.js"
-
+import CategoryPage from "./CategoryPage"
 const SIDEBAR_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "grid" },
   { id: "products", label: "Products", icon: "box" },
+  { id: "categories", label: "Categories", icon: "list" }, // ✅ Add this
   { id: "orders", label: "All Orders", icon: "list" },
 ]
 
@@ -234,14 +235,15 @@ export default function Admin() {
           </div>
         </div>
         
-        <div className="flex-1 overflow-auto p-6">
-          {page === "dashboard" && <Dashboard onOrderClick={handleOrderClick} />}
-          {page === "products" && <ProductsPage />}
-          {page === "orderDetail" && selectedOrder && <OrderDetailPage order={selectedOrder} onBack={handleBackFromOrder} />}
-          {(page === "orders" || page === "pending" || page === "delivered" || page === "cancelled") && (
-            <OrdersPage filter={page} onOrderClick={handleOrderClick} />
-          )}
-        </div>
+       <div className="flex-1 overflow-auto p-6">
+  {page === "dashboard" && <Dashboard onOrderClick={handleOrderClick} />}
+  {page === "products" && <ProductsPage />}
+  {page === "categories" && <CategoryPage />} {/* ✅ Add this */}
+  {page === "orderDetail" && selectedOrder && <OrderDetailPage order={selectedOrder} onBack={handleBackFromOrder} />}
+  {(page === "orders" || page === "pending" || page === "delivered" || page === "cancelled") && (
+    <OrdersPage filter={page} onOrderClick={handleOrderClick} />
+  )}
+</div>
       </div>
     </div>
   )

@@ -1,6 +1,10 @@
+// src/admin/ProductsPage.jsx
 import { useEffect, useState } from "react";
 import { useAdminProductStore } from "../store/useAdminProductStore.js";
-import { Icon, StatusBadge } from "./SharedComponent";
+import { useAdminCategoryStore } from "../store/useAdminCatrgoyrStore.js";
+import { Icon, StatusBadge } from "./SharedComponent.jsx";
+import { showToast } from "../utils/showToast.jsx";
+import { SIZES } from "../../../backend/src/common/config/sizes.js"; // ✅ Import your SIZES constant
 
 export default function ProductsPage() {
   const {
@@ -14,33 +18,37 @@ export default function ProductsPage() {
     setSelectedProduct,
   } = useAdminProductStore();
 
+  const { categories, fetchCategories: fetchAdminCategories, loading: categoriesLoading } = useAdminCategoryStore();
+  const [categoriesFetched, setCategoriesFetched] = useState(false);
+
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(null);
   const [formImages, setFormImages] = useState([]);
 
-  // Load products on mount
   useEffect(() => {
     fetchProducts({});
-  }, []);
+  }, [fetchProducts]);
 
-  // ── Helper: Get product ID (handles _id or id) ───────────────────────
+  useEffect(() => {
+    if (modal && !categoriesFetched) {
+      fetchAdminCategories().then(() => setCategoriesFetched(true));
+    }
+  }, [modal, categoriesFetched, fetchAdminCategories]);
+
   const getProductId = (product) => product?._id || product?.id;
 
-  // ── Helper: Extract category ID (handles object or string) ───────────
   const getCategoryValue = (category) => {
     if (!category) return "";
     if (typeof category === "object") return category._id || category.id || "";
     return category;
   };
 
-  // ── Helper: Extract category name for display ────────────────────────
   const getCategoryName = (category) => {
     if (!category) return "-";
     if (typeof category === "object") return category.name || category.title || getCategoryValue(category);
     return category;
   };
 
-  // Filter locally (handle category as object or string)
   const filtered = products.filter(
     (p) =>
       p.title?.toLowerCase().includes(search.toLowerCase()) ||
@@ -49,25 +57,36 @@ export default function ProductsPage() {
 
   const handleSave = async (form) => {
     try {
+      const categoryId = typeof form.category === "object" 
+        ? form.category._id || form.category.id 
+        : form.category;
+
       const payload = {
         ...form,
         price: Number(form.price),
-        category: getCategoryValue(form.category),
+        category: categoryId,
         images: formImages,
+        // ✅ Ensure variants is an array of { size, stock }
+        variants: Array.isArray(form.variants) 
+          ? form.variants.filter(v => v.size && v.stock !== undefined) 
+          : [],
       };
 
       if (modal === "add") {
         await createProduct(payload);
+        showToast.success("Product created successfully", "", 2500);
       } else {
-        const productId = getProductId(modal); // ← FIX: Use _id or id
+        const productId = getProductId(modal);
         if (!productId) throw new Error("Product ID is missing");
         await updateProduct(productId, payload);
+        showToast.success("Product updated successfully", "", 2500);
       }
       setModal(null);
       setFormImages([]);
-      fetchProducts({}); // refresh list
+      fetchProducts({});
     } catch (err) {
       console.error("Save failed:", err);
+      showToast.error(err.message || "Failed to save product", "", 4000);
     }
   };
 
@@ -75,8 +94,10 @@ export default function ProductsPage() {
     if (confirm("Delete this product? This action cannot be undone.")) {
       try {
         await deleteProduct(id);
+        showToast.success("Product deleted successfully", "", 2500);
       } catch (err) {
         console.error("Delete failed:", err);
+        showToast.error(err.message || "Failed to delete product", "", 4000);
       }
     }
   };
@@ -84,6 +105,11 @@ export default function ProductsPage() {
   const openEditModal = (product) => {
     setSelectedProduct(product);
     setModal(product);
+    setFormImages([]);
+  };
+
+  const openAddModal = () => {
+    setModal("add");
     setFormImages([]);
   };
 
@@ -102,16 +128,15 @@ export default function ProductsPage() {
       {modal && (
         <ProductModal
           product={modal === "add" ? null : modal}
-          onClose={() => {
-            setModal(null);
-            setFormImages([]);
-          }}
+          onClose={() => { setModal(null); setFormImages([]); }}
           onSave={handleSave}
           images={formImages}
           onImagesChange={setFormImages}
           getCategoryValue={getCategoryValue}
           getCategoryName={getCategoryName}
           getProductId={getProductId}
+          categories={categories}
+          categoriesLoading={categoriesLoading}
         />
       )}
 
@@ -127,7 +152,7 @@ export default function ProductsPage() {
           />
         </div>
         <button
-          onClick={() => setModal("add")}
+          onClick={openAddModal}
           className="flex items-center gap-1.5 px-4.5 py-2.25 rounded-lg text-[13px] border-none bg-[var(--color-gold)] text-white cursor-pointer font-medium hover:opacity-90 transition"
         >
           <Icon name="plus" size={14} color="#fff" /> Add product
@@ -139,84 +164,47 @@ export default function ProductsPage() {
         <table className="w-full border-collapse table-fixed">
           <thead>
             <tr className="bg-[var(--color-bg)]">
-              {["Product", "Category", "Gender", "Price", "Stock", "Status", "Actions"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-[11px] font-medium text-[var(--color-muted)] uppercase tracking-wide border-b border-[var(--color-border-theme)]"
-                  >
-                    {h}
-                  </th>
-                )
-              )}
+              {["Product", "Category", "Gender", "Price", "Stock", "Status", "Actions"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-[11px] font-medium text-[var(--color-muted)] uppercase tracking-wide border-b border-[var(--color-border-theme)]">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {filtered.map((p, i) => {
               const productId = getProductId(p);
-              const stock = p.stock ?? p.variants?.[0]?.stock ?? 0;
+              const stock = p.stock ?? p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) ?? 0;
               
               return (
-                <tr
-                  key={productId}
-                  className={i % 2 === 0 ? "bg-[var(--color-surface)]" : "bg-[var(--color-stripe)]"}
-                >
+                <tr key={productId} className={i % 2 === 0 ? "bg-[var(--color-surface)]" : "bg-[var(--color-stripe)]"}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 bg-[var(--color-pri-light)] rounded-md flex items-center justify-center flex-shrink-0">
                         <Icon name="pkg" size={14} color="var(--color-accent)" />
                       </div>
-                      <span className="text-[13px] font-medium text-[var(--color-text)]">
-                        {p.title}
-                      </span>
+                      <span className="text-[13px] font-medium text-[var(--color-text)]">{p.title}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-[13px] text-[var(--color-muted)]">
-                    {getCategoryName(p.category)}
-                  </td>
-                  <td className="px-4 py-3 text-[13px] text-[var(--color-muted)]">
-                    {p.gender}
-                  </td>
-                  <td className="px-4 py-3 text-[13px] font-medium text-[var(--color-text)]">
-                    ₹{p.price?.toLocaleString()}
-                  </td>
+                  <td className="px-4 py-3 text-[13px] text-[var(--color-muted)]">{getCategoryName(p.category)}</td>
+                  <td className="px-4 py-3 text-[13px] text-[var(--color-muted)]">{p.gender}</td>
+                  <td className="px-4 py-3 text-[13px] font-medium text-[var(--color-text)]">₹{p.price?.toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`text-[12px] font-medium ${
-                        stock === 0
-                          ? "text-[#7f1d1d]"
-                          : stock < 10
-                          ? "text-[#7a4f00]"
-                          : "text-[#1b5e20]"
-                      }`}
-                    >
+                    <span className={`text-[12px] font-medium ${stock === 0 ? "text-[#7f1d1d]" : stock < 10 ? "text-[#7a4f00]" : "text-[#1b5e20]"}`}>
                       {stock === 0 ? "Out of stock" : stock}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${
-                        p.isActive !== false
-                          ? "bg-[#e8f5e9] text-[#1b5e20]"
-                          : "bg-[#fdecea] text-[#7f1d1d]"
-                      }`}
-                    >
+                    <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${p.isActive !== false ? "bg-[#e8f5e9] text-[#1b5e20]" : "bg-[#fdecea] text-[#7f1d1d]"}`}>
                       {p.isActive !== false ? "active" : "inactive"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1.5">
-                      <button
-                        onClick={() => openEditModal(p)}
-                        className="px-2.5 py-1.5 rounded-md text-[11px] border border-[var(--color-border-theme)] bg-transparent text-[var(--color-text)] cursor-pointer flex items-center gap-1 hover:bg-[var(--color-bg)] transition"
-                      >
+                      <button onClick={() => openEditModal(p)} className="px-2.5 py-1.5 rounded-md text-[11px] border border-[var(--color-border-theme)] bg-transparent text-[var(--color-text)] cursor-pointer flex items-center gap-1 hover:bg-[var(--color-bg)] transition">
                         <Icon name="edit" size={12} color="var(--color-muted)" /> Edit
                       </button>
-                      <button
-                        onClick={() => handleDelete(productId)}
-                        className="px-2.5 py-1.5 rounded-md text-[11px] border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] cursor-pointer flex items-center gap-1 hover:bg-[#fecaca] transition"
-                        disabled={loading}
-                      >
+                      <button onClick={() => handleDelete(productId)} className="px-2.5 py-1.5 rounded-md text-[11px] border border-[#fca5a5] bg-[#fef2f2] text-[#7f1d1d] cursor-pointer flex items-center gap-1 hover:bg-[#fecaca] transition" disabled={loading}>
                         <Icon name="trash" size={12} color="#7f1d1d" /> Delete
                       </button>
                     </div>
@@ -227,33 +215,46 @@ export default function ProductsPage() {
           </tbody>
         </table>
         {filtered.length === 0 && !loading && (
-          <div className="text-center py-10 text-[var(--color-muted)] text-[13px]">
-            No products found
-          </div>
+          <div className="text-center py-10 text-[var(--color-muted)] text-[13px]">No products found</div>
         )}
       </div>
     </div>
   );
 }
 
-// ── ProductModal with proper ID and category handling ──────────────────
-const ProductModal = ({ product, onClose, onSave, images, onImagesChange, getCategoryValue, getCategoryName, getProductId }) => {
-  // Extract initial values safely
-  const initialProductId = product ? getProductId(product) : null;
-  const initialCategoryId = product ? getCategoryValue(product.category) : "";
-  const initialVariant = product?.variants?.[0] || { size: "Free Size", stock: product?.stock ?? 0 };
+// ── ProductModal with Multi-Variant Support ──────────────────────────────────
+const ProductModal = ({ 
+  product, 
+  onClose, 
+  onSave, 
+  images, 
+  onImagesChange, 
+  getCategoryValue, 
+  getCategoryName, 
+  getProductId,
+  categories = [],
+  categoriesLoading = false,
+}) => {
+  const initialCategoryId = product 
+    ? (typeof product.category === "object" ? product.category._id || product.category.id : product.category)
+    : "";
+
+  // ✅ Pre-populate variants from product or default to empty array
+  const initialVariants = product?.variants?.length 
+    ? product.variants.map(v => ({ size: v.size || "Free Size", stock: v.stock ?? 0 }))
+    : [{ size: "Free Size", stock: 0 }];
 
   const [form, setForm] = useState(
     product
       ? {
-          _id: initialProductId,
+          _id: getProductId(product),
           title: product.title || "",
           description: product.description || "",
           category: initialCategoryId,
           price: product.price?.toString() || "",
           gender: product.gender || "men",
           isActive: product.isActive !== false,
-          variants: [initialVariant],
+          variants: initialVariants,
         }
       : {
           title: "",
@@ -266,41 +267,99 @@ const ProductModal = ({ product, onClose, onSave, images, onImagesChange, getCat
         }
   );
 
+  // ✅ Add a new variant row
+  const addVariant = () => {
+    setForm((prev) => ({
+      ...prev,
+      variants: [...prev.variants, { size: "Free Size", stock: 0 }],
+    }));
+  };
+
+  // ✅ Update a specific variant
+  const updateVariant = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v, i) =>
+        i === index ? { ...v, [field]: value } : v
+      ),
+    }));
+  };
+
+  // ✅ Remove a variant row
+  const removeVariant = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
+  };
+
+  // ✅ Get available sizes based on selected category
+  const getAvailableSizes = () => {
+    const sizeType = categories.find(c => c._id === form.category)?.sizeType;
+    return SIZES[sizeType] || SIZES.freesize;
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-[var(--color-surface)] rounded-2xl p-7 w-[520px] border border-[var(--color-border-theme)] my-8">
+      <div className="bg-[var(--color-surface)] rounded-2xl p-7 w-[520px] border border-[var(--color-border-theme)] my-8 max-h-[90vh] overflow-y-auto">
         <div className="text-[16px] font-medium text-[var(--color-text)] mb-5">
           {product ? "Update product" : "Add new product"}
         </div>
 
-        {/* Basic Fields */}
-        {[
-          { label: "Title", key: "title", type: "text" },
-          { label: "Description", key: "description", type: "text", textarea: true },
-          { label: "Price (₹)", key: "price", type: "number" },
-          { label: "Category ID", key: "category", type: "text", placeholder: "MongoDB ObjectId" },
-        ].map((f) => (
-          <div key={f.key} className="mb-3.5">
-            <label className="text-[12px] text-[var(--color-muted)] block mb-1">
-              {f.label}
-            </label>
-            {f.textarea ? (
-              <textarea
-                value={form[f.key]}
-                onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)] min-h-[80px]"
-              />
-            ) : (
-              <input
-                type={f.type}
-                value={form[f.key]}
-                onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                placeholder={f.placeholder}
-                className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-              />
-            )}
-          </div>
-        ))}
+        {/* Title */}
+        <div className="mb-3.5">
+          <label className="text-[12px] text-[var(--color-muted)] block mb-1">Title *</label>
+          <input
+            type="text"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            required
+          />
+        </div>
+
+        {/* Description */}
+        <div className="mb-3.5">
+          <label className="text-[12px] text-[var(--color-muted)] block mb-1">Description</label>
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)] min-h-[80px]"
+          />
+        </div>
+
+        {/* Price */}
+        <div className="mb-3.5">
+          <label className="text-[12px] text-[var(--color-muted)] block mb-1">Price (₹) *</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            required
+          />
+        </div>
+
+        {/* Category Dropdown */}
+        <div className="mb-3.5">
+          <label className="text-[12px] text-[var(--color-muted)] block mb-1">Category *</label>
+          <select
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            required
+            disabled={categoriesLoading}
+          >
+            <option value="">{categoriesLoading ? "Loading categories..." : "Select a category"}</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name} {cat.sizeType && `• ${cat.sizeType}`}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Gender + Active */}
         <div className="grid grid-cols-2 gap-3 mb-3.5">
@@ -320,9 +379,7 @@ const ProductModal = ({ product, onClose, onSave, images, onImagesChange, getCat
             <label className="text-[12px] text-[var(--color-muted)] block mb-1">Status</label>
             <select
               value={form.isActive}
-              onChange={(e) =>
-                setForm({ ...form, isActive: e.target.value === "true" })
-              }
+              onChange={(e) => setForm({ ...form, isActive: e.target.value === "true" })}
               className="w-full px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none"
             >
               <option value="true">Active</option>
@@ -331,40 +388,63 @@ const ProductModal = ({ product, onClose, onSave, images, onImagesChange, getCat
           </div>
         </div>
 
-        {/* Variants (simplified: single variant for now) */}
+        {/* ✅ Variants Section - Multiple Sizes + Stock */}
         <div className="mb-4">
-          <label className="text-[12px] text-[var(--color-muted)] block mb-2">
-            Variant (Size + Stock)
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={form.variants?.[0]?.size || "Free Size"}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  variants: [{ size: e.target.value, stock: form.variants?.[0]?.stock ?? 0 }],
-                })
-              }
-              className="flex-1 px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none"
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-[12px] font-medium text-[var(--color-text)]">
+              Variants (Size + Stock)
+            </label>
+            <button
+              type="button"
+              onClick={addVariant}
+              className="text-[11px] text-[var(--color-primary)] hover:underline flex items-center gap-1"
             >
-              {["XS", "S", "M", "L", "XL", "XXL", "Free Size"].map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-            <input
-              type="number"
-              min="0"
-              placeholder="Stock"
-              value={form.variants?.[0]?.stock ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  variants: [{ size: form.variants?.[0]?.size || "Free Size", stock: Number(e.target.value) }],
-                })
-              }
-              className="w-24 px-3 py-2 rounded-lg text-[13px] border border-[var(--color-border-theme)] bg-[var(--color-bg)] text-[var(--color-text)] outline-none"
-            />
+              <Icon name="plus" size={12} color="var(--color-primary)" />
+              Add Variant
+            </button>
           </div>
+
+          <div className="space-y-2">
+            {form.variants.map((variant, index) => (
+              <div key={index} className="flex items-center gap-2 p-2 border border-[var(--color-border-theme)] rounded-lg bg-[var(--color-bg)]">
+                {/* Size Select - Dynamic based on category */}
+                <select
+                  value={variant.size}
+                  onChange={(e) => updateVariant(index, "size", e.target.value)}
+                  className="flex-1 px-2.5 py-1.5 rounded text-[12px] border border-[var(--color-border-theme)] bg-[var(--color-surface)] text-[var(--color-text)] outline-none"
+                >
+                  {getAvailableSizes().map((size) => (
+                    <option key={size} value={size}>{size}</option>
+                  ))}
+                </select>
+
+                {/* Stock Input */}
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Stock"
+                  value={variant.stock}
+                  onChange={(e) => updateVariant(index, "stock", Number(e.target.value))}
+                  className="w-20 px-2.5 py-1.5 rounded text-[12px] border border-[var(--color-border-theme)] bg-[var(--color-surface)] text-[var(--color-text)] outline-none"
+                />
+
+                {/* Remove Button */}
+                <button
+                  type="button"
+                  onClick={() => removeVariant(index)}
+                  disabled={form.variants.length === 1}
+                  className="p-1.5 text-[var(--color-muted)] hover:text-[var(--color-accent)] transition disabled:opacity-30"
+                  title="Remove variant"
+                >
+                  <Icon name="trash" size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+          
+          <p className="text-[10px] text-[var(--color-muted)] mt-2">
+            Add variants for different sizes. Stock is tracked per size.
+          </p>
         </div>
 
         {/* Image Upload */}

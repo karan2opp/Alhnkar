@@ -23,7 +23,7 @@ const sendVerificationEmail = async (email,token) => {
 };
 const sendResetPasswordEmail = async (email,token) => {
   try {
-    const url = `${process.env.CLIENT_URL}/resetPassword/${token}`;
+    const url = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     const response = await resend.emails.send({
       from: 'onboarding@resend.dev',

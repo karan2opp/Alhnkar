@@ -73,3 +73,20 @@ export const logoutService = async (set) => {
     });
   }
 };
+export const forgotPasswordService = async (email) => {
+  try {
+    await api.post("/auth/forgotPassword", { email });
+    return { success: true };
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to send reset email");
+  }
+};
+
+export const resetPasswordService = async (token, password) => {
+  try {
+    await api.put(`/auth/resetPassword/${token}`, { password });
+    return { success: true };
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Failed to reset password");
+  }
+};

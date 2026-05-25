@@ -266,39 +266,6 @@ function AddressCard() {
   );
 }
 
-function SecurityCard() {
-  return (
-    <div className="bg-surface border border-primary/10 rounded-2xl p-6 shadow-sm">
-      <h2 className="text-xl font-medium mb-6">
-        Security
-      </h2>
-
-      <div className="space-y-4">
-        <input
-          type="password"
-          placeholder="Current Password"
-          className="input"
-        />
-
-        <input
-          type="password"
-          placeholder="New Password"
-          className="input"
-        />
-
-        <input
-          type="password"
-          placeholder="Confirm New Password"
-          className="input"
-        />
-      </div>
-
-      <button className="mt-6 bg-accent text-bg px-6 py-3 rounded-md text-sm tracking-wide hover:opacity-90 transition">
-        CHANGE PASSWORD
-      </button>
-    </div>
-  );
-}
 
 function AccountActions() {
   const navigate = useNavigate();
@@ -322,7 +289,12 @@ function AccountActions() {
         >
           View My Orders
         </button>
+    <button
+          className="border border-primary px-6 py-3 rounded-md text-sm hover:bg-primary hover:text-bg transition"
 
+    onClick={()=>{
+      navigate("/forgot-password")
+    }}>Forgot Password</button>
         <button
           onClick={handleLogout}
           className="border border-red-300 px-6 py-3 rounded-md text-sm hover:bg-red-50 transition"
@@ -368,7 +340,6 @@ export default function ProfilePage() {
         <ProfileHeader />
         <PersonalInfoCard />
         <AddressCard />
-        <SecurityCard />
         <AccountActions />
       </div>
     </>
