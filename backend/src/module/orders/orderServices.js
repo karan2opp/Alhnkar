@@ -3,42 +3,96 @@ import Product from "../product/productModels.js"
 import Address from "../address/addressModels.js"
 import ApiError from "../../common/utils/apiError.js"
 import Shipment from "../shipment/shipmentModels.js"
+import pinCodeSearch from "india-pincode-search";
+
 export const createOrder = async (userId, data) => {
-  const { items, addressId, paymentMethod } = data
+  const {
+    items,
+    addressId,
+    deliveryAddress,
+    paymentMethod
+  } = data
 
-  // fetch and snapshot address
-  const address = await Address.findOne({ _id: addressId, user: userId })
-  if (!address) throw ApiError.notFound("Address not found")
+  let address;
 
-  // validate items and fetch price from DB
-  const orderItems = await Promise.all(items.map(async (item) => {
-    const product = await Product.findById(item.product)
-    if (!product) throw ApiError.notFound(`Product not found`)
+  // If deliveryAddress is provided directly
+  if (deliveryAddress) {
+    address = deliveryAddress
 
-    const variant = product.variants.find(v => v.size === item.size)
-    if (!variant) throw ApiError.badRequest(`Size ${item.size} not available`)
-    if (variant.stock < item.quantity) throw ApiError.badRequest(`Only ${variant.stock} items left in size ${item.size}`)
+    // validate pincode using package
+    const pincodeData = pinCodeSearch.search(address.pincode)
 
-    return {
-      product:  item.product,
-      size:     item.size,
-      quantity: item.quantity,
-      price:    product.price  // ✅ from DB
+    if (!pincodeData || pincodeData.length === 0) {
+      throw ApiError.badRequest("Invalid pincode")
     }
-  }))
+  }
 
-  // calculate amount from DB prices
-  const amount = orderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  // Otherwise fetch address from DB
+  else if (addressId) {
+    const savedAddress = await Address.findOne({
+      _id: addressId,
+      user: userId
+    })
+
+    if (!savedAddress) {
+      throw ApiError.badRequest("Address not found")
+    }
+
+    address = savedAddress
+  }
+
+  else {
+    throw ApiError.badRequest("Address is required")
+  }
+
+  // validate items
+  const orderItems = await Promise.all(
+    items.map(async (item) => {
+      const product = await Product.findById(item.product)
+
+      if (!product) {
+        throw ApiError.badRequest("Product not found")
+      }
+
+      const variant = product.variants.find(
+        v => v.size === item.size
+      )
+
+      if (!variant) {
+        throw ApiError.badRequest(
+          `Size ${item.size} not available`
+        )
+      }
+
+      if (variant.stock < item.quantity) {
+        throw ApiError.badRequest(
+          `Only ${variant.stock} items left in size ${item.size}`
+        )
+      }
+
+      return {
+        product: item.product,
+        size: item.size,
+        quantity: item.quantity,
+        price: product.price
+      }
+    })
+  )
+
+  const amount = orderItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  )
 
   const order = await Order.create({
-    user:    userId,
-    items:   orderItems,
+    user: userId,
+    items: orderItems,
     amount,
     paymentMethod,
     deliveryAddress: {
-      street:  address.street,
-      city:    address.city,
-      state:   address.state,
+      street: address.street,
+      city: address.city,
+      state: address.state,
       pincode: address.pincode
     }
   })

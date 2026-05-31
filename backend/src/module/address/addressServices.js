@@ -1,15 +1,45 @@
 import Address from "./addressModels.js"
 import ApiError from "../../common/utils/apiError.js"
-
+import pinCodeSearch from "india-pincode-search"
 export const createAddress = async (userId, data) => {
   const { street, city, state, pincode, isDefault } = data
 
-  // if new address is default, remove default from all other addresses
-  if (isDefault) {
-    await Address.updateMany({ user: userId }, { $set: { isDefault: false } })
+  // Validate pincode
+  const pincodeData = pinCodeSearch.search(pincode)
+
+  if (!pincodeData || pincodeData.length === 0) {
+    throw ApiError.badRequest("Invalid pincode")
   }
 
-  const address = await Address.create({ user: userId, street, city, state, pincode, isDefault })
+  const pincodeInfo = pincodeData[0]
+
+  // Optional: verify city and state match the pincode
+  if (
+    pincodeInfo.district.toLowerCase() !== city.toLowerCase() ||
+    pincodeInfo.state.toLowerCase() !== state.toLowerCase()
+  ) {
+    throw ApiError.badRequest(
+      "City or state does not match the provided pincode"
+    )
+  }
+
+  // If new address is default, remove default from others
+  if (isDefault) {
+    await Address.updateMany(
+      { user: userId },
+      { $set: { isDefault: false } }
+    )
+  }
+
+  const address = await Address.create({
+    user: userId,
+    street,
+    city,
+    state,
+    pincode,
+    isDefault
+  })
+
   return address.toObject()
 }
 

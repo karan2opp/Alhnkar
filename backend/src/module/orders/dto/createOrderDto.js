@@ -7,12 +7,23 @@ const orderItemSchema = Joi.object({
   quantity: Joi.number().integer().min(1).required(),
 })
 
+const deliveryAddressSchema = Joi.object({
+  street:  Joi.string().required().trim().min(5),
+  city:    Joi.string().required().trim().min(2),
+  state:   Joi.string().required().trim().min(2),
+  pincode: Joi.string().required().length(6).pattern(/^[1-9][0-9]{5}$/).messages({
+    "string.pattern.base": "Invalid pincode format",
+    "string.length":       "Pincode must be 6 digits"
+  })
+})
+
 class createOrderDto extends baseDto {
   static schema = Joi.object({
-    items:     Joi.array().items(orderItemSchema).min(1).required(),
-    addressId: Joi.string().hex().length(24).required(), // fetch address using this
-    paymentMethod: Joi.string().valid("upi", "card", "cod").required()
-  })
+    items:           Joi.array().items(orderItemSchema).min(1).required(),
+    paymentMethod:   Joi.string().valid("upi", "card", "cod").required(),
+    addressId:       Joi.string().hex().length(24),
+    deliveryAddress: deliveryAddressSchema
+  }).xor("addressId", "deliveryAddress") 
 }
 
 export { createOrderDto }
