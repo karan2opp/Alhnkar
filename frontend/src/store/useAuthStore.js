@@ -22,8 +22,10 @@ export const useAuthStore = create((set) => ({
       accessToken: token,
       isLoggedIn: true,
       isAdmin,
+      isInitialized: false,
       loading: false,
       error: null,
+
     });
   },
 
@@ -31,12 +33,11 @@ export const useAuthStore = create((set) => ({
    * Update access token only
    */
   setAccessToken: (token) => set({ accessToken: token }),
-
+setInitialized: (value) => set({ isInitialized: value }),
   /**
    * Fetch current user from API
    */
-  fetchCurrentUser: () => getMe(set),
-
+fetchCurrentUser: async () => await getMe(set),
   /**
    * Refresh access token
    */

@@ -1,5 +1,3 @@
-// src/order/PaymentForm.jsx
-
 export default function PaymentForm({
   paymentMethod,
   setPaymentMethod,
@@ -11,28 +9,21 @@ export default function PaymentForm({
       </h2>
 
       <div className="space-y-4">
-        {["cod", "upi", "card"].map(
-          (method) => (
-            <label
-              key={method}
-              className="block"
-            >
-              <input
-                type="radio"
-                checked={
-                  paymentMethod === method
-                }
-                onChange={() =>
-                  setPaymentMethod(method)
-                }
-              />
+        {["cod", "razorpay"].map((method) => (
+          <label key={method} className="block">
+            <input
+              type="radio"
+              checked={paymentMethod === method}
+              onChange={() =>
+                setPaymentMethod(method)
+              }
+            />
 
-              <span className="ml-2 uppercase">
-                {method}
-              </span>
-            </label>
-          )
-        )}
+            <span className="ml-2 uppercase">
+              {method}
+            </span>
+          </label>
+        ))}
       </div>
     </div>
   );

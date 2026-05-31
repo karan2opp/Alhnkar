@@ -22,7 +22,7 @@ const getItemPrice    = (item) => item?.product?.price || item?.price || 0
 
 // ── Order Detail ─────────────────────────────────────────────────────
 export const OrderDetailPage = ({ order, onBack }) => {
-  const { updateAdminOrderStatus } = useAdminOrderStore()
+  const { updateOrderStatus } = useAdminOrderStore()
   const [status, setStatus] = useState(order.status)
   const [updating, setUpdating] = useState(false)
 
@@ -32,7 +32,7 @@ export const OrderDetailPage = ({ order, onBack }) => {
 
   const handleUpdateStatus = async () => {
     setUpdating(true)
-    await updateAdminOrderStatus(getId(order), status)
+    await updateOrderStatus(getId(order), status)
     setUpdating(false)
   }
 

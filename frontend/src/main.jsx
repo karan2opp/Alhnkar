@@ -21,6 +21,7 @@ import CategoryPage from "./category/CategoryPage";
 import Admin from "./admin/Admin";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword"
+import AdminRoute from "./admin/AdminRoute";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -66,8 +67,12 @@ const router = createBrowserRouter([
   element:<CategoryPage />
 },
 {
-  path:"/admin",
-  element:<Admin />
+  path: "/admin",
+  element: (
+    <AdminRoute>
+      <Admin />
+      </AdminRoute>
+  ),
 },{
   path:"/forgot-password",
   element:<ForgotPassword />

@@ -9,7 +9,7 @@ const categorySchema = new mongoose.Schema({
     url:      { type: String },
     publicId: { type: String }  // ✅ needed for deletion later
   },
-  sizeType: { type: String, enum: ["clothing", "bottom", "freesize"], required: true },
+  sizeType: { type: String, enum: ["top", "bottom", "freesize"], required: true },
   isActive: { type: Boolean, default: true }
 }, { timestamps: true })
 

@@ -2,23 +2,20 @@ import { useEffect } from "react";
 import { useAuthStore } from "./store/useAuthStore";
 
 function App({ children }) {
-  const {
-    refreshAccessToken,
-    fetchCurrentUser,
-  } = useAuthStore();
+  const { refreshAccessToken, fetchCurrentUser, setInitialized } = useAuthStore();
 
   useEffect(() => {
     const initializeAuth = async () => {
       const refreshed = await refreshAccessToken();
-       
-  
-       
+      console.log("refresh token", refreshed);
+
       if (refreshed) {
-        const res=await fetchCurrentUser();
-      
-       console.log(res);
-                
+        const res = await fetchCurrentUser();
+        console.log(res);
       }
+
+      // ✅ mark auth as complete, regardless of success/failure
+      setInitialized(true);
     };
 
     initializeAuth();

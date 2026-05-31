@@ -7,6 +7,7 @@ import addressRoute from "./src/module/address/addressRoutes.js"
 import orderRoute from "./src/module/orders/orderRoutes.js"
 import cartRoute from "./src/module/cart/cartRoutes.js"
 import reviewRoute from "./src/module/review/reviewRoutes.js"
+import paymentRoute from "./src/module/payment/paymentRoute.js"
 import cors from "cors"
 
 const app=express()
@@ -35,4 +36,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 
 });
+app.use(
+  "/api/payments",
+  paymentRoute
+);
 export default app;

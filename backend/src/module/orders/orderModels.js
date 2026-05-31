@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
   items:  [orderItemSchema],
   amount: { type: Number, required: true },
   status: { type: String, enum: ["pending", "delivered","confirmed","cancelled"], default: "pending" },
-   paymentMethod: { type: String, enum: ["upi", "card", "cod"], required: true },
+   paymentMethod: { type: String, enum: ["razorpay", "cod"], required: true },
   deliveryAddress: {
     street:  { type: String, required: true },
     city:    { type: String, required: true },

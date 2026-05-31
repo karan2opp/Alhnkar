@@ -20,7 +20,7 @@ const deliveryAddressSchema = Joi.object({
 class createOrderDto extends baseDto {
   static schema = Joi.object({
     items:           Joi.array().items(orderItemSchema).min(1).required(),
-    paymentMethod:   Joi.string().valid("upi", "card", "cod").required(),
+    paymentMethod:   Joi.string().valid("razorpay", "cod").required(),
     addressId:       Joi.string().hex().length(24),
     deliveryAddress: deliveryAddressSchema
   }).xor("addressId", "deliveryAddress") 

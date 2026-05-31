@@ -79,11 +79,7 @@ export default function Navbar() {
               Products
             </Link>
           </li>
-          <li>
-            <Link to="/about" className="cursor-pointer hover:text-primary">
-              About Us
-            </Link>
-          </li>
+        
         </ul>
 
         {/* Right Section */}

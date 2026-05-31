@@ -102,23 +102,33 @@ export const createOrder = async (userId, data) => {
 
 export const updateOrder = async (orderId, data) => {
   const order = await Order.findById(orderId)
-  if (!order) throw ApiError.notFound("Order not found")
 
-  if (order.status === "cancelled") {
-    throw ApiError.badRequest("Cannot update a cancelled order")
+  if (!order) {
+    throw ApiError.notfound("Order not found")
   }
 
-  // prevent going backwards in status
-  const statusFlow = ["pending", "delivered", "cancelled"]
-  const currentIndex = statusFlow.indexOf(order.status)
-  const newIndex = statusFlow.indexOf(data.status)
-
-  if (newIndex < currentIndex) {
-    throw ApiError.badRequest(`Cannot change status from ${order.status} to ${data.status}`)
+  if (!data.status) {
+    return order.toObject()
   }
 
-  if (data.status) order.status = data.status
+  const validTransitions = {
+    pending: ["delivered", "cancelled"],
+    delivered: [],
+    cancelled: []
+  }
+
+  if (
+    !validTransitions[order.status].includes(data.status)
+  ) {
+    throw ApiError.badRequest(
+      `Cannot change status from ${order.status} to ${data.status}`
+    )
+  }
+
+  order.status = data.status
+
   await order.save()
+
   return order.toObject()
 }
 export const cancelOrder = async (orderId, userId) => {
