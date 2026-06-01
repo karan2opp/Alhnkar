@@ -11,12 +11,7 @@ export const fetchAllAdminOrders = async (set, filters = {}) => {
     const authState = useAuthStore.getState();
     const token = authState.accessToken;
     
-    console.log("🔐 [fetchAllAdminOrders] Auth check:", {
-      hasToken: !!token,
-      tokenPreview: token ? token.slice(0, 30) + "..." : null,
-      user: authState.user?.email || authState.user?.name,
-      isAdmin: authState.user?.role === "admin"
-    });
+   
 
     // ⚠️ Warn if no token (but continue — axios interceptor may handle it)
     if (!token) {
@@ -49,7 +44,6 @@ if (filters.status) {
 
     const res = await api.get(url);
 
-    console.log("📦 fetchAllAdminOrders response:", res.data);
 
     const extractOrders = (data) => {
       if (Array.isArray(data)) return data;

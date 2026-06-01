@@ -22,6 +22,8 @@ export const createProduct = async (set, payload) => {
     // Append variants (as JSON string)
     if (payload.variants?.length) {
       formData.append("variants", JSON.stringify(payload.variants));
+      console.log("this is variants",payload);
+      
     }
 
     // Append images (FileList or array of File)
@@ -30,7 +32,7 @@ export const createProduct = async (set, payload) => {
         formData.append("images", file);
       });
     }
-
+    
     const res = await api.post("/products/createProduct", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });

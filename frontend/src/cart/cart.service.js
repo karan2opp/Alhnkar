@@ -24,7 +24,6 @@ export const fetchCart = async (set) => {
       }
     */
   
-      console.log(res);
       
 
     set({

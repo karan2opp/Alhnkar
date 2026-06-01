@@ -26,7 +26,8 @@ export default function ProductsPage() {
   const [formImages, setFormImages] = useState([]);
 
   useEffect(() => {
-    fetchProducts({});
+   fetchProducts({})
+     
   }, [fetchProducts]);
 
   useEffect(() => {
@@ -238,6 +239,7 @@ const ProductModal = ({
   const initialCategoryId = product 
     ? (typeof product.category === "object" ? product.category._id || product.category.id : product.category)
     : "";
+console.log("this are products",product);
 
   // ✅ Pre-populate variants from product or default to empty array
   const initialVariants = product?.variants?.length 
@@ -263,9 +265,22 @@ const ProductModal = ({
           price: "",
           gender: "men",
           isActive: true,
-          variants: [{ size: "Free Size", stock: 0 }],
+          variants: [{ size: "", stock: 0 }],
         }
   );
+  useEffect(() => {
+  if (!product && form.category) {
+    // Only for new products, reset to match category's sizeType
+    const sizeType = categories.find(c => c._id === form.category)?.sizeType;
+    const availableSizes = SIZES[sizeType] || SIZES.freesize;
+    
+    setForm(prev => ({
+      ...prev,
+      variants: [{ size: availableSizes[0], stock: 0 }]
+    }));
+  } 
+  
+}, [form.category, categories, product]);
 
   // ✅ Add a new variant row
   const addVariant = () => {
@@ -296,6 +311,8 @@ const ProductModal = ({
   // ✅ Get available sizes based on selected category
   const getAvailableSizes = () => {
     const sizeType = categories.find(c => c._id === form.category)?.sizeType;
+    console.log(sizeType);
+    
     return SIZES[sizeType] || SIZES.freesize;
   };
 

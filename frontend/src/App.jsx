@@ -11,7 +11,6 @@ function App({ children }) {
 
       if (refreshed) {
         const res = await fetchCurrentUser();
-        console.log(res);
       }
 
       // ✅ mark auth as complete, regardless of success/failure
