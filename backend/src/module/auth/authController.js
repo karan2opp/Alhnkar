@@ -14,12 +14,15 @@ const register=async(req,res)=>{
 const login=async(req,res)=>{
   const {email,password}=req.body
   const {user,accessToken,refreshToken}=await authService.login(email,password)
-   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? "none"
+      : "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
   ApiResponse.ok(res, "Login successful", { user, accessToken });
 }
