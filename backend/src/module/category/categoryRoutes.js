@@ -3,7 +3,7 @@ import { authenticate } from "../auth/authMiddleware.js"
 import { authorize } from "../auth/authMiddleware.js"
 import { upload } from "../../common/middleware/multer.middleware.js"
 import validate from "../../common/middleware/validateMiddleware.js"
-import  createCategoryDto  from "./dto/createCategoryDto.js"
+import  createCategoryDto  from "./Dto/createCategoryDto.js"
 import { updateCategoryDto } from "./Dto/updateCategoryDto.js"
 import * as controller from "./categoryController.js"
 
