@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import Hero from './hero'
+import Hero from "./Hero"
 import ImageSlider from './ImageSlider'
 import FAQSection from './FAQSection'
 import Footer from './Footer'
