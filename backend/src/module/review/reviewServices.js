@@ -25,6 +25,8 @@ const addReview = async (reviewInfo, userId, imageFiles) => {
       images   // [{ url, publicId }]
     })
 
+    await review.populate("user", "name email")
+
     await updateProductRating(productId)
     return review
 
@@ -95,6 +97,7 @@ const updateReview = async (reviewId, userId, updateData, imageFiles) => {
   }
 
   await review.save();
+  await review.populate("user", "name email");
   await updateProductRating(review.product);
 
   return review;
