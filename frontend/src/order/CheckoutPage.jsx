@@ -82,7 +82,7 @@ console.log(import.meta.env.VITE_RAZORPAY_KEY_ID);
       product.price * quantity;
 
     const { data } = await api.post(
-      "http://localhost:8000/api/payments/create-order",
+     `${import.meta.env.VITE_API_URL}/payments/create-order`,
       {
         amount,
       }
