@@ -12,6 +12,7 @@ import cors from "cors"
 import { configDotenv } from "dotenv";
 configDotenv()
 const app=express()
+console.log(process.env.FRONTEND_URL);
 
 app.use(
   cors({
