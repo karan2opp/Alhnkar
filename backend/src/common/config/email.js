@@ -8,7 +8,7 @@ const resend = new Resend(`${process.env.EMAIL_API_KEY}`);
 const sendVerificationEmail = async (email,token) => {
   try {
     
-      const url = `http://localhost:8000/api/auth/verifyEmail/${token}`;
+      const url = `http://${process.env.CLIENT_URL}/api/auth/verifyEmail/${token}`;
     const response = await resend.emails.send({
       from: 'alhnkar <noreply@karanop.in>',
       to: email,
