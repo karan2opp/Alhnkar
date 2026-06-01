@@ -9,8 +9,10 @@ import cartRoute from "./src/module/cart/cartRoutes.js"
 import reviewRoute from "./src/module/review/reviewRoutes.js"
 import paymentRoute from "./src/module/payment/paymentRoute.js"
 import cors from "cors"
-
+import { configDotenv } from "dotenv";
+configDotenv()
 const app=express()
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL, // frontend URL
