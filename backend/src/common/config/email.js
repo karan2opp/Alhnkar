@@ -24,8 +24,7 @@ const sendVerificationEmail = async (email,token) => {
 const sendResetPasswordEmail = async (email,token) => {
   try {
     const url = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-console.log("Sending reset email to:", email);
-console.log("Reset URL:", url);
+
    
     const response = await resend.emails.send({
       from: 'alhnkar <noreply@karanop.in>',
@@ -38,7 +37,6 @@ console.log("Reset URL:", url);
         <p>If you didn't request this, please ignore this email.</p>
       `,
     });
-console.log("Resend response:", response);
   } catch (error) {
     console.log("Error:", error);
   }

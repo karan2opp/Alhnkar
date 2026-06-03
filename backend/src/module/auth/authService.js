@@ -57,7 +57,6 @@ const logout=async(userId)=>{
 
 const verifyEmail = async (token) => {
   const trimmed = String(token).trim();
-console.log("hii");
 
   if (!trimmed) {
     throw ApiError.badRequest("Invalid or expired verification token");
@@ -72,8 +71,6 @@ console.log("hii");
   let user = await User.findOne({ verificationToken: hashedInput }).select(
     "+verificationToken",
   );
-  console.log(hashedInput);
-  console.log(user);
   
 
   
@@ -93,7 +90,6 @@ console.log("hii");
 };
 
 const forgotPassword = async (email) => {
-    console.log("Service called with:", email);
   const user = await User.findOne({ email });
 
   if (!user) throw ApiError.notFound("No account with that email");
@@ -105,9 +101,7 @@ const forgotPassword = async (email) => {
   await user.save();
 
   try {
-  console.log("About to send reset email");
 await sendResetPasswordEmail(email, rawToken);
-console.log("Reset email sent");
   } catch (err) {
     console.error("Failed to send reset email:", err.message);
   }

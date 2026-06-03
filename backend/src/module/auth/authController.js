@@ -65,8 +65,6 @@ const refreshToken = async (req, res) => {
 
 
 const forgotPassword = async (req, res) => {
-  console.log("Forgot password route hit");
-  console.log(req.body);
 
   await authService.forgotPassword(req.body.email);
   ApiResponse.ok(res, "Password reset email sent");
