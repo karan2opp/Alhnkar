@@ -93,9 +93,11 @@ console.log("hii");
 };
 
 const forgotPassword = async (email) => {
+    console.log("Service called with:", email);
   const user = await User.findOne({ email });
-  if (!user) throw ApiError.notFound("No account with that email");
 
+  if (!user) throw ApiError.notFound("No account with that email");
+  console.log("User found:", !!user);
   const { rawToken, hashedToken } = generateResetToken();
 
   user.resetPasswordToken = hashedToken;
@@ -103,7 +105,9 @@ const forgotPassword = async (email) => {
   await user.save();
 
   try {
-    await sendResetPasswordEmail(email, rawToken);
+  console.log("About to send reset email");
+await sendResetPasswordEmail(email, rawToken);
+console.log("Reset email sent");
   } catch (err) {
     console.error("Failed to send reset email:", err.message);
   }

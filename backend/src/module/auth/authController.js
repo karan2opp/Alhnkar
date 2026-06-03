@@ -47,6 +47,7 @@ const logout = async (req, res) => {
 const verifyEmail=async(req,res)=>{
   await authService.verifyEmail(req.params.token)
   console.log(res);
+  return res.redirect(`${process.env.FRONTEND_URL}/login`);
   
    ApiResponse.ok(res, "Email verified successfully");
 }
@@ -64,6 +65,9 @@ const refreshToken = async (req, res) => {
 
 
 const forgotPassword = async (req, res) => {
+  console.log("Forgot password route hit");
+  console.log(req.body);
+
   await authService.forgotPassword(req.body.email);
   ApiResponse.ok(res, "Password reset email sent");
 };
